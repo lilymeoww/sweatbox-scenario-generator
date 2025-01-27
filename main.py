@@ -26,11 +26,14 @@ while add_more_pilots:
         aircraft_altitude = int(airport_alt)
         aircraft_heading = int(input("Enter a/c heading: ")) % 360
         aircraft_heading = int(((aircraft_heading * 2.88) + 0.5)) << 2
-        print(aircraft_heading)
-        aircraft_departure = {airport_icao}
-        aircraft_squawk = {oct(current_sq)}
+        aircraft_departure = airport_icao
+        aircraft_squawk = str(oct(current_sq))[2:]
+        aircraft_rules = input("Enter a/c flight rules (I/V)").upper()
+        aircraft_type = input("Enter a/c type (as displayed in flight plan): ")
 
-        pilot_list += f"PSEUDOPILOT:{airport_icao}_M_{facility}\n@N:{aircraft_cs}:{aircraft_squawk:04}:1:{aircraft_latitude}:{aircraft_longitude}:{aircraft_altitude}:0:{aircraft_heading}:0:"
+        pilot_list += (f"PSEUDOPILOT:{airport_icao}_M_{facility}\n@N:{aircraft_cs}:{aircraft_squawk.rjust(4,"0")}:1:{aircraft_latitude}:{aircraft_longitude}:{aircraft_altitude}:0:{aircraft_heading}:0:\n"
+                       f"${aircraft_cs}:*A:{aircraft_rules}:{aircraft_type}"
+                       f"")
     else:
         add_more_pilots = False
         scenario_file_str += f"\n\n{pilot_list}"
