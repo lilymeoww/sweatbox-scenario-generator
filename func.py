@@ -55,15 +55,21 @@ def generate_random_pilot(dep, config, vfr_factor):
                     if str(type.split(",")[0]) == str(cs[:3]):
                         print(type.split(",")[1:])
                         ac_type = random.choice(type.split(",")[1:])
-            user_stand = input("Enter stand number: ").upper()
-            with open("stands.txt", "r") as standfile:
-                stands = standfile.readlines()
-                for stand in stands:
-                    stand = stand.split(",")
-                    if stand[0] == dep and stand[1] == user_stand:
-                        lat = stand[2]
-                        long = stand[3]
-                        hdg = stand[4].strip()
+            validStand = False
+            while validStand == False:
+                user_stand = input("Enter stand number: ").upper()
+                with open("stands.txt", "r") as standfile:
+                    stands = standfile.readlines()
+                    for stand in stands:
+                        stand = stand.split(",")
+                        if stand[0] == dep and stand[1] == user_stand:
+                            validStand = True
+                            lat = stand[2]
+                            long = stand[3]
+                            hdg = stand[4].strip()
+                if validStand == False:
+                    print("Please enter a valid stand number.")
+                            
             crz = (20 + random.randint(1,20) * 1000)
             rmk = "v"
             rte = str(get_route(dep, dest))
