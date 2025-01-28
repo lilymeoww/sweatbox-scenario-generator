@@ -5,13 +5,14 @@ def get_route(departure, arrival):
         routes = file.readlines()
         i = 0
         for route in routes:
+            route_str = route.split(",")[0]
             i += 1
             # print(f"Checking route {i}\nDeparture {route.split(" ")[0].strip()}, should be {departure.strip()} ({route.split(" ")[0].strip() == departure.strip()})\nArrival {route.split(" ")[-1].strip()}, should be {arrival.strip()}({route.split(" ")[-1].strip() == arrival.strip()})")
             # time.sleep(1)
-            if route.split(" ")[0].strip() == departure.strip() and route.split(" ")[-1].strip() == arrival.strip():
-                print(route.strip())
-                return route.strip()
-        return f"{departure} {arrival}"
+            if route_str.split(" ")[0].strip() == departure.strip() and route_str.split(" ")[-1].strip() == arrival.strip():
+                return route_str.replace("\n", ""), route[1]
+                print(route[1])
+        return f"{departure} {arrival}", "E"
 
 def get_dep_for_route(departure, first_wp, config):
     with open("departure_routes.txt", "r") as file:
@@ -74,9 +75,13 @@ def generate_random_pilot(dep, config, vfr_factor):
                             hdg = stand[4].strip()
                 if validStand == False:
                     print("Please enter a valid stand number.")
-
-            crz = (25 + random.randint(1,15)) * 1000
             rmk = "v"
-            rte = get_route(dep, dest)
+            rte, oddeven = get_route(dep, dest)
+            if oddeven == "E":
+                crz = (20 + (random.randint(1,11) * 2)) * 1000
+                print(oddeven, crz)
+            else:
+                crz = (20 + (random.randint(1, 5) * 2) + 1) * 1000
+                print(oddeven, crz)
             pseudo_route = ""
             return cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route
