@@ -87,10 +87,19 @@ if __name__ == "__main__":
             print("Invalid input. Please enter an integer.")
 
     while True:
-
         try:
             incorrect_factor = int(input("Percentage of IFR with invalid routes (integer 0-100): "))
             if 0 <= incorrect_factor <= 100:
+                break
+            else:
+                print("Please enter a value between 0 and 100.")
+        except ValueError:
+            print("Invalid input. Please enter an integer.")
+
+    while True:
+        try:
+            level_factor = int(input("Percentage of IFR with invalid levels (integer 0-100): "))
+            if 0 <= level_factor <= 100:
                 break
             else:
                 print("Please enter a value between 0 and 100.")
@@ -142,7 +151,7 @@ if __name__ == "__main__":
 
             elif add_more == "a":
                 try:
-                    cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, vfr_factor, incorrect_factor)
+                    cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, vfr_factor, incorrect_factor, level_factor)
                     alt = airport.altitude
                     dep = airport.icao
                     sq = f"{current_sq:04}"

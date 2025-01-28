@@ -55,7 +55,7 @@ def validate_stand(dep):
             break
 
 
-def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int):
+def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int, level_factor: int):
     try:
         if random.randint(1, 100) <= int(vfr_factor):
             with open("callsignsVFR.txt", "r") as file:
@@ -96,6 +96,14 @@ def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int):
 
         rmk = "v"
         rte, crz = get_route(dep, dest, incorrect_factor)
+        if random.randint(1,100) <= level_factor:
+            with open("invalidAltitudes.txt", "r") as file:
+                invalidAlts = file.readlines()
+                found = False
+                for alt in invalidAlts:
+                    if not found and alt.split(",")[0] == dep and alt.split(",")[1] == dest:
+                        crz = alt.split(",")[2].strip()
+                        found = True
         pseudo_route = ""
         return cs, lat, long, hdg, ac_type, crz.strip(), dest, rmk, rules, rte, pseudo_route
 
