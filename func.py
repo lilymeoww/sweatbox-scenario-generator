@@ -3,6 +3,7 @@ import string
 
 def get_route(departure, arrival, incorrect_factor: int):
     try:
+
         if random.randint(1, 100) <= incorrect_factor:
             with open("invalidRoutes.txt", "r") as f:
                 routes = f.readlines()
@@ -14,6 +15,7 @@ def get_route(departure, arrival, incorrect_factor: int):
             if route_str.split(" ")[0].strip() == departure.strip() and route_str.split(" ")[-1].strip() == arrival.strip():
                 print(f"Route found: {route.split(',')[1].strip()}")
                 return route_str.replace("\n", ""), route.split(",")[1].strip()
+
     except FileNotFoundError:
         print("Error: routes.txt file not found.")
     return f"{departure} {arrival}", "E"
@@ -61,6 +63,7 @@ def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int):
                 ac_type = random.choice(["P28A", "C172", "C152", "DA42"])
                 
                 lat, long, hdg = validate_stand(dep)
+                hdg = int(((hdg * 2.88) + 0.5)) << 2
                 crz = (500 * random.randint(1, 3)) + 1000
                 rmk = "v"
                 rte = "VFR"
@@ -83,7 +86,10 @@ def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int):
             else:
                 ac_type = "UNKNOWN"  # Default if not found
 
-        lat, long, hdg = validate_stand(dep)
+
+                lat, long, hdg = validate_stand(dep)
+                hdg = int(((int(hdg) * 2.88) + 0.5)) << 2
+
 
         rmk = "v"
         rte, crz = get_route(dep, dest, incorrect_factor)
