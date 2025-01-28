@@ -1,15 +1,19 @@
 import random
 import string
 
-def get_route(departure, arrival):
+def get_route(departure, arrival, incorrect_factor: int):
     try:
-        with open("routes.txt", "r") as file:
-            routes = file.readlines()
-            for i, route in enumerate(routes, start=1):
-                route_str = route.split(",")[0]
-                if route_str.split(" ")[0].strip() == departure.strip() and route_str.split(" ")[-1].strip() == arrival.strip():
-                    print(f"Route found: {route.split(',')[1].strip()}")
-                    return route_str.replace("\n", ""), route.split(",")[1].strip()
+        if random.randint(1, 100) <= incorrect_factor:
+            with open("invalidRoutes.txt", "r") as f:
+                routes = f.readlines()
+        else:
+            with open("routes.txt", "r") as file:
+                routes = file.readlines()
+        for i, route in enumerate(routes, start=1):
+            route_str = route.split(",")[0]
+            if route_str.split(" ")[0].strip() == departure.strip() and route_str.split(" ")[-1].strip() == arrival.strip():
+                print(f"Route found: {route.split(',')[1].strip()}")
+                return route_str.replace("\n", ""), route.split(",")[1].strip()
     except FileNotFoundError:
         print("Error: routes.txt file not found.")
     return f"{departure} {arrival}", "E"
@@ -44,7 +48,7 @@ def validate_stand(dep):
             break
 
 
-def generate_random_pilot(dep, config, vfr_factor):
+def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int):
     try:
         if random.randint(1, 100) <= int(vfr_factor):
             with open("callsignsVFR.txt", "r") as file:
@@ -70,21 +74,21 @@ def generate_random_pilot(dep, config, vfr_factor):
                 rules = "I"
                 dest = random.choice(callsigns).split(",")[1].strip()
 
-                with open("aircrafttypes.txt", "r") as typefile:
-                    for type in typefile:
-                        type = type.strip()
-                        if type.split(",")[0] == cs[:3]:
-                            ac_type = random.choice(type.split(",")[1:])
-                            break
-                    else:
-                        ac_type = "UNKNOWN"  # Default if not found
+        with open("aircrafttypes.txt", "r") as typefile:
+            for type in typefile:
+                type = type.strip()
+                if type.split(",")[0] == cs[:3]:
+                    ac_type = random.choice(type.split(",")[1:])
+                    break
+            else:
+                ac_type = "UNKNOWN"  # Default if not found
 
-                lat, long, hdg = validate_stand(dep)
+        lat, long, hdg = validate_stand(dep)
 
-                rmk = "v"
-                rte, crz = get_route(dep, dest)
-                pseudo_route = ""
-                return cs, lat, long, hdg, ac_type, crz.strip(), dest, rmk, rules, rte, pseudo_route
+        rmk = "v"
+        rte, crz = get_route(dep, dest, incorrect_factor)
+        pseudo_route = ""
+        return cs, lat, long, hdg, ac_type, crz.strip(), dest, rmk, rules, rte, pseudo_route
 
     except ValueError as ve:
         print(f"Value error: {ve}")

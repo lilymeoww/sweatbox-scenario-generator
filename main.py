@@ -86,6 +86,17 @@ if __name__ == "__main__":
         except ValueError:
             print("Invalid input. Please enter an integer.")
 
+    while True:
+
+        try:
+            incorrect_factor = int(input("Percentage of invalid routes (integer 0-100): "))
+            if 0 <= incorrect_factor <= 100:
+                break
+            else:
+                print("Please enter a value between 0 and 100.")
+        except ValueError:
+            print("Invalid input. Please enter an integer.")
+
     # Adding Controllers
     while input("Add more controllers? (y/n): ").lower() == "y":
         try:
@@ -131,7 +142,7 @@ if __name__ == "__main__":
 
             elif add_more == "a":
                 try:
-                    cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, airport.config, vfr_factor)
+                    cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, vfr_factor, incorrect_factor)
                     alt = airport.altitude
                     dep = airport.icao
                     sq = f"{current_sq:04}"
