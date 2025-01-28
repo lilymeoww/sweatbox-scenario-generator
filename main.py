@@ -40,8 +40,8 @@ while add_more_pilots:
         pseudoplane_route = f"{get_dep_for_route(airport_icao,aircraft_route.split()[1],config)} {aircraft_route.split()[2]} {aircraft_route.split()[3]}"
 
 
-        pilot_list += (f"PSEUDOPILOT:{airport_icao}_M_{facility}\n@N:{aircraft_cs}:{aircraft_squawk.rjust(4,"0")}:1:{aircraft_latitude}:{aircraft_longitude}:{aircraft_altitude}:0:{aircraft_heading}:0:\n"
-                       f"$FP{aircraft_cs}:*A:{aircraft_rules}:{aircraft_type}/L:420:{airport_icao}:0000::{aircraft_cruise_fl}:{aircraft_destination}:00:00:0::/{aircraft_rmk}/:{aircraft_route}\n"
+        pilot_list += (f"PSEUDOPILOT:{airport_icao}_M_{facility}\n@N:{aircraft_cs}:{aircraft_squawk.rjust(4,"0")}:1:{aircraft_latitude}:{aircraft_longitude}:{aircraft_altitude}:0:{aircraft_heading}:0\n"
+                       f"$FP{aircraft_cs}:*A:{aircraft_rules}:{aircraft_type}/L:420:{airport_icao}:0000::{aircraft_cruise_fl}:{aircraft_destination}:00:00:0:0::/{aircraft_rmk}/:{aircraft_route.strip()}\n"
                        f"SIMDATA:{aircraft_cs}:*:*:25:1:0.010\n"
                        f"$ROUTE:{pseudoplane_route}\n"
                        f"DELAY:1:2\n"
