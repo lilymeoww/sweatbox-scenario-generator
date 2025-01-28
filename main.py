@@ -1,5 +1,6 @@
 from func import *
-
+from tkinter import *
+from tkinter import ttk
 
 class Airport:
     def __init__(self, icao, altitude, config, facility):
@@ -98,8 +99,12 @@ ILS:55.9436373:-3.3341400:298.0"""
         cruise_fl = input("Enter cruise level as altitude: ")
         dest = input("Enter aircraft destination airport: ")
         rmk = input("Enter voice rules (v, r, t, or empty): ")
-        route = str(get_route(dep, dest))
-        pseudo_route = f"{get_dep_for_route(dep, route.split()[1], airport.config)}"
+        if rules == "I":
+            route = str(get_route(dep, dest))
+            pseudo_route = f"{get_dep_for_route(dep, route.split()[1], airport.config)}"
+        else:
+            route = ""
+            pseudo_route = ""
         pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, ac_type, cruise_fl, dest, rmk, route, pseudo_route)
         scenario.add_pilot(pilot)
 
