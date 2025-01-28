@@ -4,9 +4,10 @@ def get_route(departure, arrival):
     with open("routes.txt", "r") as file:
         routes = file.readlines()
         for route in routes:
-            route_comp = route.strip().split()
+            route_comp = route.strip().split(" ")
             if route_comp[0] == departure and route_comp[-1] == arrival:
-                return route
+                print(route[5:-6])
+                return route[5:-6]
         return f"{departure} DIRECT {arrival}"
 
 def get_dep_for_route(departure, first_wp, config):
@@ -55,6 +56,7 @@ def generate_random_pilot(dep, config, vfr_factor):
                     if str(type.split(",")[0]) == str(cs[:3]):
                         print(type.split(",")[1:])
                         ac_type = random.choice(type.split(",")[1:])
+
             validStand = False
             while validStand == False:
                 user_stand = input("Enter stand number: ").upper()
@@ -70,8 +72,7 @@ def generate_random_pilot(dep, config, vfr_factor):
                 if validStand == False:
                     print("Please enter a valid stand number.")
                             
-            crz = (20 + random.randint(1,20) * 1000)
             rmk = "v"
             rte = str(get_route(dep, dest))
-            pseudo_route = f"{get_dep_for_route(dep, rte.split()[1], config)}"
+            pseudo_route = ""
             return cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route
