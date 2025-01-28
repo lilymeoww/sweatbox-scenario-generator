@@ -1,3 +1,5 @@
+from func import *
+
 airport_alt = 136.0
 airport_icao = "EGPH"
 facility = "GND"
@@ -30,9 +32,14 @@ while add_more_pilots:
         aircraft_squawk = str(oct(current_sq))[2:]
         aircraft_rules = input("Enter a/c flight rules (I/V)").upper()
         aircraft_type = input("Enter a/c type (as displayed in flight plan): ")
+        aircraft_cruise_fl = input("Enter cruise fl as an altitude (i.e. 33000): ")
+        aircraft_destination = input("Enter aircraft destination airport: ")
+        aircraft_rmk = input("Enter voice rules of a/c (v, r, t, or empty): ")
+        aircraft_route = get_route(airport_icao, aircraft_destination)
+
 
         pilot_list += (f"PSEUDOPILOT:{airport_icao}_M_{facility}\n@N:{aircraft_cs}:{aircraft_squawk.rjust(4,"0")}:1:{aircraft_latitude}:{aircraft_longitude}:{aircraft_altitude}:0:{aircraft_heading}:0:\n"
-                       f"${aircraft_cs}:*A:{aircraft_rules}:{aircraft_type}"
+                       f"$FP{aircraft_cs}:*A:{aircraft_rules}:{aircraft_type}/L:420:{airport_icao}:0000::{aircraft_cruise_fl}:{aircraft_destination}:00:00:0::/{aircraft_rmk}/:{aircraft_route}"
                        f"")
     else:
         add_more_pilots = False
