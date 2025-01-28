@@ -101,11 +101,11 @@ if __name__ == "__main__":
     # Adding Pilots
     while True:
         add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
-        if add_more in ['m', 'a', 'no']:
+        if add_more in ['m', 'a', 'n']:
             break
         print("Invalid option. Please enter 'Manual', 'Auto', or 'No'.")
 
-    while add_more != "no":
+    while add_more != "n":
         try:
             current_sq += 1
             if add_more == "m":
