@@ -1,14 +1,17 @@
-import random, string
+import random, string, time
 
 def get_route(departure, arrival):
     with open("routes.txt", "r") as file:
         routes = file.readlines()
+        i = 0
         for route in routes:
-            route_comp = route.strip().split(" ")
-            if route_comp[0] == departure and route_comp[-1] == arrival:
-                print(route[5:-6])
-                return route[5:-6]
-        return f"{departure} DIRECT {arrival}"
+            i += 1
+            # print(f"Checking route {i}\nDeparture {route.split(" ")[0].strip()}, should be {departure.strip()} ({route.split(" ")[0].strip() == departure.strip()})\nArrival {route.split(" ")[-1].strip()}, should be {arrival.strip()}({route.split(" ")[-1].strip() == arrival.strip()})")
+            # time.sleep(1)
+            if route.split(" ")[0].strip() == departure.strip() and route.split(" ")[-1].strip() == arrival.strip():
+                print(route.strip())
+                return route.strip()
+        return f"{departure} {arrival}"
 
 def get_dep_for_route(departure, first_wp, config):
     with open("departure_routes.txt", "r") as file:
@@ -49,7 +52,7 @@ def generate_random_pilot(dep, config, vfr_factor):
             chosen_callsign = random.choice(callsigns).split(",")
             cs = chosen_callsign[0] + str(random.randint(10,99)) + random.choice(string.ascii_uppercase) + random.choice(string.ascii_uppercase)
             rules = "I"
-            dest = random.choice(chosen_callsign[0:])
+            dest = random.choice(chosen_callsign[1:])
             with open("aircrafttypes.txt", "r") as typefile:
                 for type in typefile:
                     type = type.strip()
@@ -71,8 +74,9 @@ def generate_random_pilot(dep, config, vfr_factor):
                             hdg = stand[4].strip()
                 if validStand == False:
                     print("Please enter a valid stand number.")
-                            
+
+            crz = (25 + random.randint(1,15)) * 1000
             rmk = "v"
-            rte = str(get_route(dep, dest))
+            rte = get_route(dep, dest)
             pseudo_route = ""
             return cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route
