@@ -89,7 +89,7 @@ if __name__ == "__main__":
     while True:
 
         try:
-            incorrect_factor = int(input("Percentage of invalid routes (integer 0-100): "))
+            incorrect_factor = int(input("Percentage of IFR with invalid routes (integer 0-100): "))
             if 0 <= incorrect_factor <= 100:
                 break
             else:

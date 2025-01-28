@@ -5,17 +5,19 @@ def get_route(departure, arrival, incorrect_factor: int):
     try:
 
         if random.randint(1, 100) <= incorrect_factor:
-            with open("invalidRoutes.txt", "r") as f:
+            with open("invalidRoutes.txt", "r") as file:
                 poss_routes = []
-                routes = f.readlines()
+                routes = file.readlines()
         else:
             with open("routes.txt", "r") as file:
+                poss_routes = []
                 routes = file.readlines()
         for route in routes:
             route_str = route.split(",")[0]
             if route_str.split(" ")[0].strip() == departure.strip() and route_str.split(" ")[-1].strip() == arrival.strip():
-                print(f"Route found: {route.split(',')[1].strip()}")
+                # print(f"Route found: {route.split(',')[1].strip()}")
                 poss_routes.append([route_str.replace("\n", ""), route.split(",")[1].strip()])
+                # print(poss_routes)
         route_chosen = random.choice(poss_routes)
         return route_chosen[0], route_chosen[1]
 
@@ -61,12 +63,12 @@ def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int):
                 chosen_callsign = random.choice(callsigns).split(",")
                 cs = chosen_callsign[0]
                 rules = "V"
-                dest = random.choice(callsigns).split(",")[0].strip()
+                dest = chosen_callsign[1].strip()
 
                 ac_type = random.choice(["P28A", "C172", "C152", "DA42"])
                 
                 lat, long, hdg = validate_stand(dep)
-                hdg = int(((hdg * 2.88) + 0.5)) << 2
+                hdg = int(((int(hdg) * 2.88) + 0.5)) << 2
                 crz = (500 * random.randint(1, 3)) + 1000
                 rmk = "v"
                 rte = "VFR"
@@ -78,7 +80,7 @@ def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int):
                 chosen_callsign = random.choice(callsigns).split(",")
                 cs = chosen_callsign[0] + str(random.randint(10, 99)) + random.choice(string.ascii_uppercase) + random.choice(string.ascii_uppercase)
                 rules = "I"
-                dest = random.choice(callsigns).split(",")[1].strip()
+                dest = chosen_callsign[1].strip()
 
         with open("aircrafttypes.txt", "r") as typefile:
             for type in typefile:
