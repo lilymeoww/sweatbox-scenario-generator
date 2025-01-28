@@ -41,7 +41,7 @@ class Pilot:
     def __str__(self):
         return (f"\nPSEUDOPILOT:{self.dep}_M_GND\n"
                 f"@N:{self.cs}:{self.sq.rjust(4, "0")}:1:{self.lat}:{self.long}:{self.alt}:0:{self.hdg}:0\n"
-                f"$FP{self.cs}:*A:{self.rules}:{self.ac_type}/L:420:{self.dep}:0000::{self.crz}:{self.dest}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
+                f"$FP{self.cs}:*A:{self.rules}:{self.ac_type}:420:{self.dep}:0000::{self.crz}:{self.dest}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
                 f"SIMDATA:{self.cs}:*:*:25.1.0.000\n"
                 f"$ROUTE:{self.pseudo_route}\n"
                 f"DELAY:1:2\n"
@@ -105,7 +105,7 @@ ILS:55.9436373:-3.3341400:298.0"""
             rmk = input("Enter voice rules (v, r, t, or empty): ")
             if rules == "I":
                 route = str(get_route(dep, dest))
-                pseudo_route = f"{get_dep_for_route(dep, route.split()[1], airport.config)}"
+                pseudo_route = ""
             else:
                 route = ""
                 pseudo_route = ""
@@ -113,6 +113,7 @@ ILS:55.9436373:-3.3341400:298.0"""
             scenario.add_pilot(pilot)
             add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
         elif add_more == "a":
+            current_sq += 1
             cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, airport.config, vfr_factor)
             alt = int(airport.altitude)
             dep = airport.icao
