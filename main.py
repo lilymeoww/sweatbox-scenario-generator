@@ -68,7 +68,6 @@ class Scenario:
         scenario_file_str += "\n\n".join(str(pilot) for pilot in self.pilots)
         return scenario_file_str
 
-
 if __name__ == "__main__":
     airport = Airport("EGPH", 136, "24", "GND")
     app_data = """ILS24:55.9560884:-3.3546135:55.9438540:-3.3907010
@@ -84,28 +83,36 @@ ILS:55.9436373:-3.3341400:298.0"""
         scenario.add_controller(controller)
 
     current_sq = 0
-    while input("Add more pilots? (y/n): ").lower() == "y":
-        current_sq += 1
-        cs = input("Enter c/s: ")
-        lat = input("Enter latitude: ")
-        long = input("Enter longitude: ")
-        alt = int(airport.altitude)
-        hdg = int(input("Enter a/c heading: ")) % 360
-        hdg = int(((hdg * 2.88) + 0.5)) << 2
-        dep = airport.icao
-        sq = str(oct(current_sq))[2:]
-        rules = input("Enter a/c flight rules (I/V): ").upper()
-        ac_type = input("Enter a/c type as displayed on fpln: ")
-        cruise_fl = input("Enter cruise level as altitude: ")
-        dest = input("Enter aircraft destination airport: ")
-        rmk = input("Enter voice rules (v, r, t, or empty): ")
-        if rules == "I":
-            route = str(get_route(dep, dest))
-            pseudo_route = f"{get_dep_for_route(dep, route.split()[1], airport.config)}"
-        else:
-            route = ""
-            pseudo_route = ""
-        pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, ac_type, cruise_fl, dest, rmk, route, pseudo_route)
-        scenario.add_pilot(pilot)
+    add_more_pilots = True
+    add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
+    while add_more_pilots:
+        if add_more == "m":
+            current_sq += 1
+            cs = input("Enter c/s: ")
+            lat = input("Enter latitude: ")
+            long = input("Enter longitude: ")
+            alt = int(airport.altitude)
+            hdg = int(input("Enter a/c heading: ")) % 360
+            hdg = int(((hdg * 2.88) + 0.5)) << 2
+            dep = airport.icao
+            sq = str(oct(current_sq))[2:]
+            rules = input("Enter a/c flight rules (I/V): ").upper()
+            ac_type = input("Enter a/c type as displayed on fpln: ")
+            cruise_fl = input("Enter cruise level as altitude: ")
+            dest = input("Enter aircraft destination airport: ")
+            rmk = input("Enter voice rules (v, r, t, or empty): ")
+            if rules == "I":
+                route = str(get_route(dep, dest))
+                pseudo_route = f"{get_dep_for_route(dep, route.split()[1], airport.config)}"
+            else:
+                route = ""
+                pseudo_route = ""
+            pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, ac_type, cruise_fl, dest, rmk, route, pseudo_route)
+            scenario.add_pilot(pilot)
+        elif add_more == "a":
+            num_new_pilots = int(input("How many: "))
+            for i in range(num_new_pilots):
+                generate_random_pilot()
+
 
     print(scenario.generate_scenario())
