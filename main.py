@@ -39,7 +39,7 @@ class Pilot:
         self.pseudo_route = pseudo_route
 
     def __str__(self):
-        return (f"\n\nPSEUDOPILOT:{self.dep}_M_GND\n"
+        return (f"\nPSEUDOPILOT:{self.dep}_M_GND\n"
                 f"@N:{self.cs}:{self.sq.rjust(4, "0")}:1:{self.lat}:{self.long}:{self.alt}:0:{self.hdg}:0\n"
                 f"$FP{self.cs}:*A:{self.rules}:{self.type}/L:420:{self.dep}:0000::{self.crz}:{self.dest}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
                 f"SIMDATA:{self.cs}:*:*:25.1.0.000\n"
@@ -76,6 +76,8 @@ ILS:55.9513586:-3.3594437:118.0
 ILS:55.9436373:-3.3341400:298.0"""
     scenario = Scenario(airport, app_data)
 
+    vfr_factor = int(input("Percentage VFR (integer 0-100): "))
+
     while input("Add more controllers? (y/n): ").lower() == "y":
         name = input("Enter controller callsign: ").upper().strip()
         freq = input("Enter controller freq: ").strip()
@@ -111,12 +113,12 @@ ILS:55.9436373:-3.3341400:298.0"""
             scenario.add_pilot(pilot)
             add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
         elif add_more == "a":
-            cs, lat, long, hdg, type, crz, dest, rmk, rules = generate_random_pilot(airport.icao)
+            cs, lat, long, hdg, type, crz, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, airport.config, vfr_factor)
             alt = int(airport.altitude)
             dep = airport.icao
             sq = str(oct(current_sq))[2:]
             hdg = int(((int(hdg) * 2.88) + 0.5)) << 2
-            pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, type, crz, dest, rmk, "VFR", "")
+            pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, type, crz, dest, rmk, rte, pseudo_route)
             scenario.add_pilot(pilot)
             add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
         else:
