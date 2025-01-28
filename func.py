@@ -4,9 +4,10 @@ def get_route(departure, arrival):
     with open("routes.txt", "r") as file:
         routes = file.readlines()
         for route in routes:
-            route_comp = route.strip().split()
+            route_comp = route.strip().split(" ")
             if route_comp[0] == departure and route_comp[-1] == arrival:
-                return route
+                print(route[5:-6])
+                return route[5:-6]
         return f"{departure} DIRECT {arrival}"
 
 def get_dep_for_route(departure, first_wp, config):
@@ -27,7 +28,7 @@ def generate_random_pilot(dep, config, vfr_factor):
             rules = "V"
             dest = random.choice(chosen_callsign[0:])
             with open("aircrafttypes.txt", "r") as typefile:
-                type = random.choice(["P28A", "C172", "C152", "DA42"])
+                ac_type = random.choice(["P28A", "C172", "C152", "DA42"])
             user_stand = input("Enter stand number: ").upper()
             with open("stands.txt", "r") as standfile:
                 stands = standfile.readlines()
@@ -41,7 +42,7 @@ def generate_random_pilot(dep, config, vfr_factor):
             rmk = "v"
             rte = "VFR"
             pseudo_route = ""
-            return cs, lat, long, hdg, type, crz, dest, rmk, rules, rte, pseudo_route
+            return cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route
     else:
         with open("callsignsIFR.txt", "r") as file:
             callsigns = file.readlines()
@@ -54,7 +55,7 @@ def generate_random_pilot(dep, config, vfr_factor):
                     type = type.strip()
                     if str(type.split(",")[0]) == str(cs[:3]):
                         print(type.split(",")[1:])
-                        type = random.choice(type.split(",")[0:])
+                        ac_type = random.choice(type.split(",")[1:])
             user_stand = input("Enter stand number: ").upper()
             with open("stands.txt", "r") as standfile:
                 stands = standfile.readlines()
@@ -64,8 +65,8 @@ def generate_random_pilot(dep, config, vfr_factor):
                         lat = stand[2]
                         long = stand[3]
                         hdg = stand[4].strip()
-            crz = (20 + random.randint(1,20) * 1000)
+            crz = (20 + random.randint(1,20)) * 1000
             rmk = "v"
             rte = str(get_route(dep, dest))
-            pseudo_route = f"{get_dep_for_route(dep, rte.split()[1], config)}"
-            return cs, lat, long, hdg, type, crz, dest, rmk, rules, rte, pseudo_route
+            pseudo_route = ""
+            return cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route
