@@ -42,11 +42,11 @@ class Pilot:
         return (f"\n\nPSEUDOPILOT:{self.dep}_M_GND\n"
                 f"@N:{self.cs}:{self.sq.rjust(4, "0")}:1:{self.lat}:{self.long}:{self.alt}:0:{self.hdg}:0\n"
                 f"$FP{self.cs}:*A:{self.rules}:{self.type}/L:420:{self.dep}:0000::{self.crz}:{self.dest}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
-                f"SIMDATA:{self.cs}:*:*:25.1.0.010\n"
+                f"SIMDATA:{self.cs}:*:*:25.1.0.000\n"
                 f"$ROUTE:{self.pseudo_route}\n"
                 f"DELAY:1:2\n"
                 f"REQALT::7000\n"
-                f"INITIALPSEUDOPILOT:{self.dep}_M_GND\n\n")
+                f"INITIALPSEUDOPILOT:{self.dep}_M_GND")
 
 
 class Scenario:
@@ -109,10 +109,19 @@ ILS:55.9436373:-3.3341400:298.0"""
                 pseudo_route = ""
             pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, ac_type, cruise_fl, dest, rmk, route, pseudo_route)
             scenario.add_pilot(pilot)
+            add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
         elif add_more == "a":
-            num_new_pilots = int(input("How many: "))
-            for i in range(num_new_pilots):
-                generate_random_pilot()
+            cs, lat, long, hdg, type, crz, dest, rmk, rules = generate_random_pilot(airport.icao)
+            alt = int(airport.altitude)
+            dep = airport.icao
+            sq = str(oct(current_sq))[2:]
+            hdg = int(((int(hdg) * 2.88) + 0.5)) << 2
+            pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, type, crz, dest, rmk, "VFR", "")
+            scenario.add_pilot(pilot)
+            add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
+        else:
+            add_more_pilots = False
 
-
-    print(scenario.generate_scenario())
+    scenario_file = open("testsb.txt", "w")
+    scenario_file.write(scenario.generate_scenario())
+    print("written to file!")
