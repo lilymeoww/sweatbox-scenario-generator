@@ -8,7 +8,6 @@ def get_route(departure, arrival):
             for i, route in enumerate(routes, start=1):
                 route_str = route.split(",")[0]
                 if route_str.split(" ")[0].strip() == departure.strip() and route_str.split(" ")[-1].strip() == arrival.strip():
-                    print(f"Route found: {route.split(',')[1].strip()}")
                     return route_str.replace("\n", ""), route.split(",")[1].strip()
     except FileNotFoundError:
         print("Error: routes.txt file not found.")
@@ -57,6 +56,7 @@ def generate_random_pilot(dep, config, vfr_factor):
                 ac_type = random.choice(["P28A", "C172", "C152", "DA42"])
                 
                 lat, long, hdg = validate_stand(dep)
+                hdg = int(((hdg * 2.88) + 0.5)) << 2
                 crz = (500 * random.randint(1, 3)) + 1000
                 rmk = "v"
                 rte = "VFR"
@@ -80,6 +80,7 @@ def generate_random_pilot(dep, config, vfr_factor):
                         ac_type = "UNKNOWN"  # Default if not found
 
                 lat, long, hdg = validate_stand(dep)
+                hdg = int(((int(hdg) * 2.88) + 0.5)) << 2
 
                 rmk = "v"
                 rte, crz = get_route(dep, dest)
