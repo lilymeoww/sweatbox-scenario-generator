@@ -106,6 +106,16 @@ if __name__ == "__main__":
         except ValueError:
             print("Invalid input. Please enter an integer.")
 
+    while True:
+        try:
+            entry_error_factor = int(input("Percentage of IFR with flight plan entry errors, such as filing from wrong airport, typo on a/c type etc. (integer 0-100): "))
+            if 0 <= entry_error_factor <= 100:
+                break
+            else:
+                print("Please enter a value between 0 and 100.")
+        except ValueError:
+            print("Invalid input. Please enter an integer.")
+
     # Adding Controllers
     while input("Add more controllers? (y/n): ").lower() == "y":
         try:
@@ -151,7 +161,7 @@ if __name__ == "__main__":
 
             elif add_more == "a":
                 try:
-                    cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, vfr_factor, incorrect_factor, level_factor)
+                    cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, vfr_factor, incorrect_factor, level_factor, entry_error_factor)
                     alt = airport.altitude
                     dep = airport.icao
                     sq = f"{current_sq:04}"
