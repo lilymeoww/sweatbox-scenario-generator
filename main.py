@@ -68,15 +68,15 @@ class Scenario:
 
 
 if __name__ == "__main__":
-    try:
-        airport = Airport("EGPH", 136, "24", "GND")
-        app_data = """ILS24:55.9560884:-3.3546135:55.9438540:-3.3907010
-        ILS06:55.9437922:-3.3908724:55.9561296:-3.3544421
-        ILS:55.9513586:-3.3594437:118.0
-        ILS:55.9436373:-3.3341400:298.0"""
-        scenario = Scenario(airport, app_data)
+    airport = Airport("EGPH", 136, "24", "GND")
+    app_data = """ILS24:55.9560884:-3.3546135:55.9438540:-3.3907010
+    ILS06:55.9437922:-3.3908724:55.9561296:-3.3544421
+    ILS:55.9513586:-3.3594437:118.0
+    ILS:55.9436373:-3.3341400:298.0"""
+    scenario = Scenario(airport, app_data)
 
-        # Handle VFR Factor Input
+    # Handle VFR Factor Input
+    while True:
         while True:
             try:
                 vfr_factor = int(input("Percentage VFR (integer 0-100): "))
