@@ -76,12 +76,6 @@ def generate_random_pilot(dep, config, vfr_factor):
                 if validStand == False:
                     print("Please enter a valid stand number.")
             rmk = "v"
-            rte, oddeven = get_route(dep, dest)
-            if oddeven.strip() == "E":
-                crz = (20 + (random.randint(1,11) * 2)) * 1000
-                print(oddeven.strip(), crz)
-            else:
-                crz = (20 + (random.randint(1, 5) * 2) + 1) * 1000
-                print(oddeven.strip(), crz)
+            rte, crz = get_route(dep, dest)
             pseudo_route = ""
-            return cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route
+            return cs, lat, long, hdg, ac_type, crz.strip(), dest, rmk, rules, rte, pseudo_route
