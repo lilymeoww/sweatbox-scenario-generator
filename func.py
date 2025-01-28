@@ -10,8 +10,8 @@ def get_route(departure, arrival):
             # print(f"Checking route {i}\nDeparture {route.split(" ")[0].strip()}, should be {departure.strip()} ({route.split(" ")[0].strip() == departure.strip()})\nArrival {route.split(" ")[-1].strip()}, should be {arrival.strip()}({route.split(" ")[-1].strip() == arrival.strip()})")
             # time.sleep(1)
             if route_str.split(" ")[0].strip() == departure.strip() and route_str.split(" ")[-1].strip() == arrival.strip():
-                return route_str.replace("\n", ""), route[1]
-                print(route[1])
+                print(route.split(",")[1])
+                return route_str.replace("\n", ""), route.split(",")[1]
         return f"{departure} {arrival}", "E"
 
 def get_dep_for_route(departure, first_wp, config):
@@ -77,11 +77,11 @@ def generate_random_pilot(dep, config, vfr_factor):
                     print("Please enter a valid stand number.")
             rmk = "v"
             rte, oddeven = get_route(dep, dest)
-            if oddeven == "E":
+            if oddeven.strip() == "E":
                 crz = (20 + (random.randint(1,11) * 2)) * 1000
-                print(oddeven, crz)
+                print(oddeven.strip(), crz)
             else:
                 crz = (20 + (random.randint(1, 5) * 2) + 1) * 1000
-                print(oddeven, crz)
+                print(oddeven.strip(), crz)
             pseudo_route = ""
             return cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route
