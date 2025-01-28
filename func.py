@@ -6,15 +6,18 @@ def get_route(departure, arrival, incorrect_factor: int):
 
         if random.randint(1, 100) <= incorrect_factor:
             with open("invalidRoutes.txt", "r") as f:
+                poss_routes = []
                 routes = f.readlines()
         else:
             with open("routes.txt", "r") as file:
                 routes = file.readlines()
-        for i, route in enumerate(routes, start=1):
+        for route in routes:
             route_str = route.split(",")[0]
             if route_str.split(" ")[0].strip() == departure.strip() and route_str.split(" ")[-1].strip() == arrival.strip():
                 print(f"Route found: {route.split(',')[1].strip()}")
-                return route_str.replace("\n", ""), route.split(",")[1].strip()
+                poss_routes.append([route_str.replace("\n", ""), route.split(",")[1].strip()])
+        route_chosen = random.choice(poss_routes)
+        return route_chosen[0], route_chosen[1]
 
     except FileNotFoundError:
         print("Error: routes.txt file not found.")
@@ -43,7 +46,7 @@ def validate_stand(dep):
                 for stand in stands:
                     stand = stand.split(",")
                     if stand[0] == dep and stand[1] == user_stand:
-                        return stand[2], stand[3], stand[4].strip()  # Return lat, long, hdg
+                        return stand[2], stand[3], stand[4].strip()
             print("Please enter a valid stand number.")
         except FileNotFoundError:
             print("Error: stands.txt file not found.")
@@ -86,10 +89,8 @@ def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int):
             else:
                 ac_type = "UNKNOWN"  # Default if not found
 
-
-                lat, long, hdg = validate_stand(dep)
-                hdg = int(((int(hdg) * 2.88) + 0.5)) << 2
-
+        lat, long, hdg = validate_stand(dep)
+        hdg = int(((int(hdg) * 2.88) + 0.5)) << 2
 
         rmk = "v"
         rte, crz = get_route(dep, dest, incorrect_factor)
