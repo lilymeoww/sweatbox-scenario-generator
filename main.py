@@ -1,11 +1,13 @@
 from func import *
 
+
 class Airport:
     def __init__(self, icao, altitude, config, facility):
         self.icao = icao
         self.altitude = altitude
         self.config = config
         self.facility = facility
+
 
 class Controller:
     def __init__(self, airport_icao, facility, name, frequency):
@@ -16,6 +18,7 @@ class Controller:
 
     def __str__(self):
         return f"PSEUDOPILOT:{self.airport_icao}_M_{self.facility}\nCONTROLLER:{self.name}:{self.frequency}"
+
 
 class Pilot:
     def __init__(self, cs, lat, long, alt, hdg, dep, sq, rules, type, crz, dest, rmk, rte, pseudo_route):
@@ -35,14 +38,15 @@ class Pilot:
         self.pseudo_route = pseudo_route
 
     def __str__(self):
-        return(f"\n\nPSEUDOPILOT:{self.dep}_M_GND\n"
-               f"@N:{self.cs}:{self.sq.rjust(4,"0")}:1:{self.lat}:{self.long}:{self.alt}:0:{self.hdg}:0\n"
-               f"$FP{self.cs}:*A:{self.rules}:{self.type}/L:420:{self.dep}:0000::{self.crz}:{self.dest}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
-               f"SIMDATA:{self.cs}:*:*:25.1.0.010\n"
-               f"$ROUTE:{self.pseudo_route}\n"
-               f"DELAY:1:2\n"
-               f"REQALT::7000\n"
-               f"INITIALPSEUDOPILOT:{self.dep}_M_GND\n\n")
+        return (f"\n\nPSEUDOPILOT:{self.dep}_M_GND\n"
+                f"@N:{self.cs}:{self.sq.rjust(4, "0")}:1:{self.lat}:{self.long}:{self.alt}:0:{self.hdg}:0\n"
+                f"$FP{self.cs}:*A:{self.rules}:{self.type}/L:420:{self.dep}:0000::{self.crz}:{self.dest}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
+                f"SIMDATA:{self.cs}:*:*:25.1.0.010\n"
+                f"$ROUTE:{self.pseudo_route}\n"
+                f"DELAY:1:2\n"
+                f"REQALT::7000\n"
+                f"INITIALPSEUDOPILOT:{self.dep}_M_GND\n\n")
+
 
 class Scenario:
     def __init__(self, airport, app_data):
@@ -58,10 +62,11 @@ class Scenario:
         self.pilots.append(pilot)
 
     def generate_scenario(self):
-        scenerio_file_str = f"PSEUDOPILOT:ALL\n\nAIRPORT_ALT:{self.airport.altitude}\n\n{self.app_data}\n\n"
-        scenerio_file_str += "".join(str(controller) for controller in self.controllers)
-        scenerio_file_str += "\n\n".join(str(pilot) for pilot in self.pilots)
-        return scenerio_file_str
+        scenario_file_str = f"PSEUDOPILOT:ALL\n\nAIRPORT_ALT:{self.airport.altitude}\n\n{self.app_data}\n\n"
+        scenario_file_str += "".join(str(controller) for controller in self.controllers)
+        scenario_file_str += "\n\n".join(str(pilot) for pilot in self.pilots)
+        return scenario_file_str
+
 
 if __name__ == "__main__":
     airport = Airport("EGPH", 136, "24", "GND")
