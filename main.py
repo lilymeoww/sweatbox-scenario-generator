@@ -1,4 +1,4 @@
-from func import *
+from func import get_route, generate_random_pilot
 
 class Airport:
     def __init__(self, icao, altitude, config, facility):
@@ -62,8 +62,8 @@ class Scenario:
 
     def generate_scenario(self):
         scenario_file_str = f"PSEUDOPILOT:ALL\n\nAIRPORT_ALT:{self.airport.altitude}\n\n{self.app_data}\n\n"
-        scenario_file_str += "".join(str(controller) for controller in self.controllers)
-        scenario_file_str += "\n\n".join(str(pilot) for pilot in self.pilots)
+        scenario_file_str += "".join(str(controller) + "\n" for controller in self.controllers)
+        scenario_file_str += "\n".join(str(pilot) for pilot in self.pilots)
         return scenario_file_str
 
 
@@ -77,90 +77,73 @@ if __name__ == "__main__":
 
     # Handle VFR Factor Input
     while True:
-        while True:
-            try:
-                vfr_factor = int(input("Percentage VFR (integer 0-100): "))
-                if 0 <= vfr_factor <= 100:
-                    break  # Valid input, exit the loop
-                else:
-                    print("Please enter a value between 0 and 100.")
-            except ValueError:
-                print("Invalid input. Please enter an integer.")
+        try:
+            vfr_factor = int(input("Percentage VFR (integer 0-100): "))
+            if 0 <= vfr_factor <= 100:
+                break
+            else:
+                print("Please enter a value between 0 and 100.")
+        except ValueError:
+            print("Invalid input. Please enter an integer.")
 
-        # Adding Controllers
-        while input("Add more controllers? (y/n): ").lower() == "y":
-            while True:
+    # Adding Controllers
+    while input("Add more controllers? (y/n): ").lower() == "y":
+        try:
+            name = input("Enter controller callsign: ").upper().strip()
+            freq = input("Enter controller freq: ").strip()
+            controller = Controller(airport.icao, "GND", name, freq)
+            scenario.add_controller(controller)
+        except Exception as e:
+            print(f"Error adding controller: {e}. Please try again.")
+
+    current_sq = 0
+
+    # Adding Pilots
+    while True:
+        add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
+        if add_more in ['m', 'a', 'no']:
+            break
+        print("Invalid option. Please enter 'Manual', 'Auto', or 'No'.")
+
+    while add_more != "no":
+        try:
+            current_sq += 1
+            if add_more == "m":
+                cs = input("Enter c/s: ")
+                lat = input("Enter latitude: ")
+                long = input("Enter longitude: ")
+                alt = airport.altitude
+                hdg = int(input("Enter a/c heading (0-359): ")) % 360
+                dep = airport.icao
+                sq = f"{current_sq:04}"
+                rules = input("Enter a/c flight rules (I/V): ").upper()
+                input_ac_type = input("Enter a/c type as displayed on fpln: ")
+                cruise_fl = input("Enter cruise level as altitude: ")
+                dest = input("Enter aircraft destination airport: ")
+                rmk = input("Enter voice rules (v, r, t, or empty): ")
+
+                route, pseudo_route = ("", "")
+                if rules == "I":
+                    route, pseudo_route = get_route(dep, dest)
+
+                pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, input_ac_type, cruise_fl, dest, rmk, route, pseudo_route)
+                scenario.add_pilot(pilot)
+
+            elif add_more == "a":
                 try:
-                    name = input("Enter controller callsign: ").upper().strip()
-                    freq = input("Enter controller freq: ").strip()
-                    controller = Controller(airport.icao, "GND", name, freq)
-                    scenario.add_controller(controller)
-                    break  # Valid input, exit the loop
+                    cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, airport.config, vfr_factor)
+                    alt = airport.altitude
+                    dep = airport.icao
+                    sq = f"{current_sq:04}"
+                    pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, ac_type, crz, dest, rmk, rte, pseudo_route)
+                    scenario.add_pilot(pilot)
                 except Exception as e:
-                    print(f"Error adding controller: {e}. Please try again.")
+                    print(f"Error generating random pilot: {e}")
 
-        current_sq = 0
-        
-        # Adding Pilots
-        add_more_pilots = True
-        while True:
-            add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
-            if add_more in ['m', 'a', 'no']:
-                break  # Exit loop if valid input
-            print("Invalid option. Please enter 'Manual', 'Auto', or 'No'.")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
 
-        while add_more_pilots:
-            try:
-                if add_more == "m":
-                    while True:
-                        try:
-                            current_sq += 1
-                            cs = input("Enter c/s: ")
-                            lat = input("Enter latitude: ")
-                            long = input("Enter longitude: ")
-                            alt = airport.altitude  # Altitude is set from airport
-                            hdg = int(input("Enter a/c heading: ")) % 360
-                            hdg = int(((hdg * 2.88) + 0.5)) << 2
-                            dep = airport.icao
-                            sq = f"{current_sq:04}"  # Format to 4 digits
-                            rules = input("Enter a/c flight rules (I/V): ").upper()
-                            input_ac_type = input("Enter a/c type as displayed on fpln: ")
-                            cruise_fl = input("Enter cruise level as altitude: ")
-                            dest = input("Enter aircraft destination airport: ")
-                            rmk = input("Enter voice rules (v, r, t, or empty): ")
-
-                            # Get route based on rules
-                            if rules == "I":
-                                route, pseudo_route = get_route(dep, dest)
-                            else:
-                                route, pseudo_route = "", ""
-
-                            pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, input_ac_type, cruise_fl, dest, rmk, route, pseudo_route)
-                            scenario.add_pilot(pilot)
-                            break  # Valid input, exit the loop
-                        except ValueError as ve:
-                            print(f"Input error: {ve}. Please enter the correct values.")
-                        except Exception as e:
-                            print(f"Error adding pilot: {e}. Please try again.")
-
-                elif add_more == "a":
-                    current_sq += 1
-                    try:
-                        cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, airport.config, vfr_factor)
-                        alt = airport.altitude
-                        dep = airport.icao
-                        sq = f"{current_sq:04}"  # Format to 4 digits
-                        hdg = int(((int(hdg) * 2.88) + 0.5)) << 2
-                        pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, ac_type, crz, dest, rmk, rte, pseudo_route)
-                        scenario.add_pilot(pilot)
-                    except Exception as e:
-                        print(f"Error generating random pilot: {e}")
-
-                else:
-                    add_more_pilots = False
-
-            except Exception as e:
-                print(f"An unexpected error occurred: {e}")
+        add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
 
     # Save scenario to file
     try:
