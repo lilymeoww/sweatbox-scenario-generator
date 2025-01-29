@@ -66,7 +66,7 @@ def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int, level_fac
                 dest = chosen_callsign[1].strip()
 
                 ac_type = random.choice(["P28A", "C172", "C152", "DA42"])
-                
+
                 lat, long, hdg = validate_stand(dep)
                 hdg = int(((int(hdg) * 2.88) + 0.5)) << 2
                 crz = (500 * random.randint(1, 3)) + 1000
@@ -117,8 +117,10 @@ def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int, level_fac
                             new_type = bad_type.split(",")[1].split()
                 ac_type = new_type
             elif chosen_error == "dep":
-                pass
-        return cs, lat, long, hdg, ac_type, crz.strip(), dest, rmk, rules, rte, pseudo_route
+                with open("adepError.txt", "r") as f:
+                    lines = f.readlines()
+                    dep = random.choice(lines)
+        return cs, lat, long, hdg, ac_type, crz.strip(), dep, dest, rmk, rules, rte, pseudo_route
 
     except ValueError as ve:
         print(f"Value error: {ve}")

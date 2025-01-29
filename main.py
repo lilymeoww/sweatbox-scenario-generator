@@ -161,9 +161,8 @@ if __name__ == "__main__":
 
             elif add_more == "a":
                 try:
-                    cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, vfr_factor, incorrect_factor, level_factor, entry_error_factor)
+                    cs, lat, long, hdg, ac_type, crz, dep, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, vfr_factor, incorrect_factor, level_factor, entry_error_factor)
                     alt = airport.altitude
-                    dep = airport.icao
                     sq = f"{current_sq:04}"
                     pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, ac_type, crz, dest, rmk, rte, pseudo_route)
                     scenario.add_pilot(pilot)
