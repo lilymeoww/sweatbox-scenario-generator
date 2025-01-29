@@ -1,5 +1,8 @@
 import tkinter as tk
+from tkinter import filedialog
 import customtkinter
+import os
+import re
 
 
 class App(customtkinter.CTk):
@@ -16,6 +19,9 @@ class App(customtkinter.CTk):
         self.invalidLevelPercentage = tk.IntVar()
         self.fplanErrorsPercentage = tk.IntVar()
         self.numberOfPlanes = tk.StringVar(value=20)
+
+        self.sectorFileLocation = None
+        self.outputDirectory = None
 
         # configure window
         self.title("Sweatbox Scenario Generator")
@@ -120,6 +126,39 @@ class App(customtkinter.CTk):
         self.airportSelectButton = customtkinter.CTkButton(
             self.airportSelectFrame, text="EGPH", command=self.switchAirport)
         self.airportSelectButton.grid(row=1, column=0, padx=20, pady=(20, 20))
+
+    def getSectorFile(self) -> str:
+        if not self.sectorFileLocation:
+            ukPack = self.getFilePath("UK controller Pack")
+            self.sectorFileLocation = f"{ukPack}/Data/Sector"
+            self.writeOptions()
+            sector_files = os.listdir(self.sectorFileLocation)
+            pattern = re.compile(r"UK_\d{4}_\d{2}\.sct")
+
+            for file in sector_files:
+                if pattern.match(file):
+                    sectorFilePath = os.path.join(
+                        self.sectorFileLocation, file)
+                    break
+
+        with open(sectorFilePath, "r")as sf:
+            ...  # process
+
+    def loadOptions(self) -> None:
+        if os.path.exists("sweatbox_generator.config"):
+            with open("sweatbox_generator.config", "r") as configFile:
+                config = configFile.read().split(',')
+                if len(config) >= 2:
+                    self.sectorFileLocation = config[0]
+                    self.outputDirectory = config[1]
+
+    def writeOptions(self) -> None:
+        with open("sweatbox_generator.config", "w")as configFile:
+            configFile.write(f"{self.sectorFileLocation},")
+            configFile.write(f"{self.outputDirectory},")
+
+    def getFilePath(self, dir: str) -> str:
+        return filedialog.askdirectory(title=f"Select {dir}")
 
     def generate(self) -> None:
         ...
