@@ -174,6 +174,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             ac_type = "UNKNOWN"
 
         stand = random.choice(list(stands))
+        stands.add(stand)
         lat = stand.lat
         long = stand.long
         hdg = int(((int(stand.heading) * 2.88) + 0.5)) << 2
