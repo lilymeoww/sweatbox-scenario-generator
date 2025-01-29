@@ -1,0 +1,21 @@
+{
+  "callsigns": {
+    "RYR": "B738,B38M",
+    "RUK": "B738",
+    "BAW": "A320,A21N",
+    "UAE": "A35K",
+    "SHT": "A320,A20N",
+    "EJA": "CL60",
+    "WZZ": "A21N",
+    "FIN": "A35K,A320",
+    "ACA": "B763",
+    "CPA": "B77W",
+    "LOT": "B738",
+    "TOM": "B738",
+    "DAL": "B752,A339",
+    "EZY": "A320,A20N,A319,A21N",
+    "VIR": "A346,A339,B789",
+    "EWG": "A320",
+    "THY": "A321"
+  }
+}
