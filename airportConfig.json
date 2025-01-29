@@ -1,0 +1,26 @@
+{
+  "EGPH": {
+    "ICAO": "EGPH",
+    "elevation": "136",
+    "runway": "24",
+    "position": "GND",
+    "approachData": {
+      "app1": "ILS24:55.9560884:-3.3546135:55.9438540:-3.3907010",
+      "app2": "ILS06:55.9437922:-3.3908724:55.9561296:-3.3544421",
+      "app3": "ILS:55.9513586:-3.3594437:118.0",
+      "app4": "ILS:55.9436373:-3.3341400:298.0"
+    }
+  },
+  "EGCC": {
+    "ICAO": "EGCC",
+    "position": "GND"
+  },
+  "EGSS": {
+    "ICAO": "EGSS",
+    "position": "GND"
+  },
+  "EGKK": {
+    "ICAO": "EGKK",
+    "position": "GND"
+  }
+}

@@ -1,4 +1,11 @@
 from func import get_route, generate_random_pilot
+import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+print(os.environ["MAP_API_KEY"])
 
 class Airport:
     def __init__(self, icao, altitude, config, facility):
@@ -68,11 +75,18 @@ class Scenario:
 
 
 if __name__ == "__main__":
-    airport = Airport("EGPH", 136, "24", "GND")
-    app_data = """ILS24:55.9560884:-3.3546135:55.9438540:-3.3907010
-    ILS06:55.9437922:-3.3908724:55.9561296:-3.3544421
-    ILS:55.9513586:-3.3594437:118.0
-    ILS:55.9436373:-3.3341400:298.0"""
+    # Load Main Airprot Config Data
+    selected = input("Select airport: EGPH, EGSS, EGCC, EGKK\n").upper()
+    with open("airportConfig.json") as configData:
+        airportConfig = json.load(configData)
+    selected = airportConfig.get(selected)
+    airport = Airport(selected.get("ICAO"), selected.get("elevation"), selected.get("runway"), selected.get("position"))
+
+    # Load Runway Approach Data
+    approaches = selected.get("approachData")
+    app_data = ""
+    for counter in range(len(selected.get("approachData"))):
+        app_data += approaches.get("app"+ str((counter + 1))) + "\n"
     scenario = Scenario(airport, app_data)
 
     # Handle VFR Factor Input
