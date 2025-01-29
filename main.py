@@ -1,5 +1,11 @@
 from func import get_route, generate_random_pilot
 import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+print(os.environ["MAP_API_KEY"])
 
 class Airport:
     def __init__(self, icao, altitude, config, facility):
