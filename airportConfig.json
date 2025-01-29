@@ -1,6 +1,6 @@
 {
   "EGPH": {
-    "ICAO":  "EGPH",
+    "ICAO": "EGPH",
     "elevation": "136",
     "runway": "24",
     "position": "GND",
@@ -12,6 +12,15 @@
     }
   },
   "EGCC": {
-    "position":  "GND"
+    "ICAO": "EGCC",
+    "position": "GND"
+  },
+  "EGSS": {
+    "ICAO": "EGSS",
+    "position": "GND"
+  },
+  "EGKK": {
+    "ICAO": "EGKK",
+    "position": "GND"
   }
 }
