@@ -2,9 +2,10 @@ from func import get_route, generate_random_pilot
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
-print(os.environ["MAP_API_KEY"])
+# print(os.environ["MAP_API_KEY"])
+
 
 class Airport:
     def __init__(self, icao, altitude, config, facility):
@@ -44,13 +45,15 @@ class Pilot:
 
     def __str__(self):
         return (f"\nPSEUDOPILOT:{self.dep}_M_GND\n"
-                f"@N:{self.cs}:{self.sq.rjust(4, '0')}:1:{self.lat}:{self.long}:{self.alt}:0:{self.hdg}:0\n"
-                f"$FP{self.cs}:*A:{self.rules}:{self.ac_type}:420:{self.dep}:0000::{self.crz}:{self.dest.strip()}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
-                f"SIMDATA:{self.cs}:*:*:25.1.0.000\n"
-                f"$ROUTE:{self.pseudo_route}\n"
-                f"DELAY:1:2\n"
-                f"REQALT::7000\n"
-                f"INITIALPSEUDOPILOT:{self.dep}_M_GND")
+                f"@N:{self.cs}:{self.sq.rjust(4, '0')}:1:{self.lat}:{self.long}:{
+            self.alt}:0:{self.hdg}:0\n"
+            f"$FP{self.cs}:*A:{self.rules}:{self.ac_type}:420:{self.dep}:0000::{
+                    self.crz}:{self.dest.strip()}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
+            f"SIMDATA:{self.cs}:*:*:25.1.0.000\n"
+            f"$ROUTE:{self.pseudo_route}\n"
+            f"DELAY:1:2\n"
+            f"REQALT::7000\n"
+            f"INITIALPSEUDOPILOT:{self.dep}_M_GND")
 
 
 class Scenario:
@@ -67,8 +70,10 @@ class Scenario:
         self.pilots.append(pilot)
 
     def generate_scenario(self):
-        scenario_file_str = f"PSEUDOPILOT:ALL\n\nAIRPORT_ALT:{self.airport.altitude}\n\n{self.app_data}\n\n"
-        scenario_file_str += "".join(str(controller) + "\n" for controller in self.controllers)
+        scenario_file_str = f"PSEUDOPILOT:ALL\n\nAIRPORT_ALT:{
+            self.airport.altitude}\n\n{self.app_data}\n\n"
+        scenario_file_str += "".join(str(controller) +
+                                     "\n" for controller in self.controllers)
         scenario_file_str += "\n".join(str(pilot) for pilot in self.pilots)
         return scenario_file_str
 
@@ -94,7 +99,8 @@ if __name__ == "__main__":
 
     while True:
         try:
-            incorrect_factor = int(input("Percentage of IFR with invalid routes (integer 0-100): "))
+            incorrect_factor = int(
+                input("Percentage of IFR with invalid routes (integer 0-100): "))
             if 0 <= incorrect_factor <= 100:
                 break
             else:
@@ -104,7 +110,8 @@ if __name__ == "__main__":
 
     while True:
         try:
-            level_factor = int(input("Percentage of IFR with invalid levels (integer 0-100): "))
+            level_factor = int(
+                input("Percentage of IFR with invalid levels (integer 0-100): "))
             if 0 <= level_factor <= 100:
                 break
             else:
@@ -114,7 +121,8 @@ if __name__ == "__main__":
 
     while True:
         try:
-            entry_error_factor = int(input("Percentage of IFR with flight plan entry errors, such as filing from wrong airport, typo on a/c type etc. (integer 0-100): "))
+            entry_error_factor = int(input(
+                "Percentage of IFR with flight plan entry errors, such as filing from wrong airport, typo on a/c type etc. (integer 0-100): "))
             if 0 <= entry_error_factor <= 100:
                 break
             else:
@@ -162,15 +170,18 @@ if __name__ == "__main__":
                 if rules == "I":
                     route, pseudo_route = get_route(dep, dest)
 
-                pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, input_ac_type, cruise_fl, dest, rmk, route, pseudo_route)
+                pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules,
+                              input_ac_type, cruise_fl, dest, rmk, route, pseudo_route)
                 scenario.add_pilot(pilot)
 
             elif add_more == "a":
                 try:
-                    cs, lat, long, hdg, ac_type, crz, dep, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(airport.icao, vfr_factor, incorrect_factor, level_factor, entry_error_factor)
+                    cs, lat, long, hdg, ac_type, crz, dep, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(
+                        airport.icao, vfr_factor, incorrect_factor, level_factor, entry_error_factor)
                     alt = airport.altitude
                     sq = f"{current_sq:04}"
-                    pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules, ac_type, crz, dest, rmk, rte, pseudo_route)
+                    pilot = Pilot(cs, lat, long, alt, hdg, dep, sq,
+                                  rules, ac_type, crz, dest, rmk, rte, pseudo_route)
                     scenario.add_pilot(pilot)
                 except Exception as e:
                     print(f"Error generating random pilot: {e}")
