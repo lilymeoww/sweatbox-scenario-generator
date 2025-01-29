@@ -63,9 +63,11 @@ def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int, level_fac
                 chosen_callsign = random.choice(callsigns).split(",")
                 cs = chosen_callsign[0]
                 rules = "V"
-                dest = chosen_callsign[1].strip()
+                dest = random.choice(["EGPF","EGPB","EGNX","EGPC","EGAA","EGPH","EGLK","EGLF","EGMA","EGFF"])
 
                 ac_type = random.choice(["P28A", "C172", "C152", "DA42"])
+
+                adep = dep
 
                 lat, long, hdg = validate_stand(dep)
                 hdg = int(((int(hdg) * 2.88) + 0.5)) << 2
@@ -73,7 +75,7 @@ def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int, level_fac
                 rmk = "v"
                 rte = "VFR"
                 pseudo_route = ""
-                return cs, lat, long, hdg, ac_type, crz, dest, rmk, rules, rte, pseudo_route
+                return cs, lat, long, hdg, ac_type, crz, adep, dest, rmk, rules, rte, pseudo_route
         else:
             with open("callsignsIFR.txt", "r") as file:
                 callsigns = file.readlines()

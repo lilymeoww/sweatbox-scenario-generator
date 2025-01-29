@@ -4,3 +4,5 @@
 __pycache__/
 testsba.txt/
 testsb.txt/
+.env/
+.env
