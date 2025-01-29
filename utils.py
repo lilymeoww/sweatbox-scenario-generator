@@ -78,57 +78,30 @@ class Scenario:
         return scenario_file_str
 
 
-if __name__ == "__main__":
-    airport = Airport("EGPH", 136, "24", "GND")
+def generateSweatboxText(ukPackLocation: str, airport: str, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[str], autoPilots: int, manualPilots: str) -> str:
+    airport = Airport("EGPH", 136, "24", "GND")  # TODO get from SF
     app_data = """ILS24:55.9560884:-3.3546135:55.9438540:-3.3907010
     ILS06:55.9437922:-3.3908724:55.9561296:-3.3544421
     ILS:55.9513586:-3.3594437:118.0
     ILS:55.9436373:-3.3341400:298.0"""
     scenario = Scenario(airport, app_data)
 
-    # Handle VFR Factor Input
-    while True:
-        try:
-            vfr_factor = int(input("Percentage VFR (integer 0-100): "))
-            if 0 <= vfr_factor <= 100:
-                break
-            else:
-                print("Please enter a value between 0 and 100.")
-        except ValueError:
-            print("Invalid input. Please enter an integer.")
+    for controller in controllers:
+        # search SF for details
+        # create new ATCO
+        ...
 
-    while True:
-        try:
-            incorrect_factor = int(
-                input("Percentage of IFR with invalid routes (integer 0-100): "))
-            if 0 <= incorrect_factor <= 100:
-                break
-            else:
-                print("Please enter a value between 0 and 100.")
-        except ValueError:
-            print("Invalid input. Please enter an integer.")
+    current_sq = 0
+    for _ in range(autoPilots):
+        # from below probs
+        ...
 
-    while True:
-        try:
-            level_factor = int(
-                input("Percentage of IFR with invalid levels (integer 0-100): "))
-            if 0 <= level_factor <= 100:
-                break
-            else:
-                print("Please enter a value between 0 and 100.")
-        except ValueError:
-            print("Invalid input. Please enter an integer.")
+    # add manual pilots, probably complied in interface code
 
-    while True:
-        try:
-            entry_error_factor = int(input(
-                "Percentage of IFR with flight plan entry errors, such as filing from wrong airport, typo on a/c type etc. (integer 0-100): "))
-            if 0 <= entry_error_factor <= 100:
-                break
-            else:
-                print("Please enter a value between 0 and 100.")
-        except ValueError:
-            print("Invalid input. Please enter an integer.")
+    # either write to file, or return string to interface, and prompt user to save
+
+
+if __name__ == "__main__":
 
     # Adding Controllers
     while input("Add more controllers? (y/n): ").lower() == "y":

@@ -1,15 +1,15 @@
 import tkinter as tk
 import customtkinter
 
-# Modes: "System" (standard), "Dark", "Light"
-customtkinter.set_appearance_mode("Dark")
-# Themes: "blue" (standard), "green", "dark-blue"
-customtkinter.set_default_color_theme("green")
-
 
 class App(customtkinter.CTk):
     def __init__(self) -> None:
         super().__init__()
+
+        # Modes: "System" (standard), "Dark", "Light"
+        customtkinter.set_appearance_mode("Dark")
+        # Themes: "blue" (standard), "green", "dark-blue"
+        customtkinter.set_default_color_theme("green")
 
         self.vfrPercentage = tk.IntVar()
         self.invalidRoutePercentage = tk.IntVar()
@@ -122,7 +122,7 @@ class App(customtkinter.CTk):
         self.airportSelectButton.grid(row=1, column=0, padx=20, pady=(20, 20))
 
     def generate(self) -> None:
-        print("Generating")
+        ...
 
     def updateVFRLabel(self, value) -> None:
         self.vfrLabel.configure(
