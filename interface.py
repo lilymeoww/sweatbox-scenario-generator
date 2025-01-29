@@ -169,16 +169,16 @@ class App(customtkinter.CTk):
         return filedialog.askdirectory(title=f"Select {dir}")
 
     def generate(self) -> None:
-        print(len(self.manualPilots))
-        return
-        self.sweatboxContents = generateSweatboxText("EGPH", "AIRPORT DATA", self.vfrPercentage, self.invalidRoutePercentage,
-                                                     self.invalidLevelLabel, self.fplanErrorsPercentage, [("EGPH_TWR", "118,705"), ("EGPH_APP", "121.205")], self.numberOfPlanes, "")
+        self.sweatboxContents = generateSweatboxText(self.currentAirport, "AIRPORT DATA", int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
+                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), [("EGPH_TWR", "118,705"), ("EGPH_APP", "121.205")], int(self.numberOfPlanes.get()), self.manualPilots)
         if not self.outputDirectory:
             self.outputDirectory = self.selectDirectory("Output")
         self.writeOptions()
         # TODO : Update the naming - let the user choose the name?
         with open(f"{self.outputDirectory}/sweatbox.txt", "w")as outFile:
             outFile.write(self.sweatboxContents)
+
+        self.destroy()
 
     def updateVFRLabel(self, value) -> None:
         self.vfrLabel.configure(
