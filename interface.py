@@ -11,54 +11,108 @@ class App(customtkinter.CTk):
     def __init__(self) -> None:
         super().__init__()
 
-        # configure window
-        self.title("Sweatbox Scenario Generator")
-        self.geometry(f"{1100}x{580}")
-
         self.vfrPercentage = tk.IntVar()
         self.invalidRoutePercentage = tk.IntVar()
         self.invalidLevelPercentage = tk.IntVar()
         self.fplanErrorsPercentage = tk.IntVar()
+        self.numberOfPlanes = tk.StringVar(value=20)
+
+        # configure window
+        self.title("Sweatbox Scenario Generator")
+        self.geometry(f"{1100}x{580}")
+
+        self.grid_columnconfigure(0, weight=0, minsize=240)
+        self.grid_columnconfigure(1, weight=2)
+        self.grid_columnconfigure(2, weight=0, minsize=240)
+        self.grid_rowconfigure((0, 1, 2, 3), weight=1)
+
+        self.airportSelectFrame = customtkinter.CTkFrame(
+            self, corner_radius=12)
+        self.airportSelectFrame.grid(
+            row=0, column=0, rowspan=4, sticky="nsew", padx=5, pady=5)
+        self.airportSelectFrame.grid_rowconfigure(3, weight=1)
+        self.airportSelectFrame.grid_columnconfigure(0, weight=1)
+
+        airportSelectLabel = customtkinter.CTkLabel(
+            self.airportSelectFrame, text="Select Airport", font=customtkinter.CTkFont(size=20, weight="bold"))
+        airportSelectLabel.grid(row=0, column=0, padx=20, pady=(20, 10))
+
+        self.placeAirportSelect()
+
+        self.configFrame = customtkinter.CTkFrame(
+            self, corner_radius=12)
+        self.configFrame.grid(row=0, column=1, rowspan=4,
+                              columnspan=1, sticky="nsew", padx=5, pady=5)
+
+        self.summaryFrame = customtkinter.CTkFrame(
+            self, corner_radius=12)
+        self.summaryFrame.grid(row=0, column=2, rowspan=3,
+                               sticky="nsew", padx=5, pady=5)
+        self.summaryFrame.grid_columnconfigure(0, weight=1)
+        self.summaryFrame.grid_rowconfigure(4, weight=1)
+
+        customtkinter.CTkLabel(self.summaryFrame, text="Summary",
+                               font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=0, column=0, padx=0, pady=(20, 10))
+
+        self.generateFrame = customtkinter.CTkFrame(
+            self, corner_radius=12)
+        self.generateFrame.grid(row=3, column=2, sticky="nsew", padx=5, pady=5)
 
         self.placeSliders()
 
-    def placeSliders(self):
+        self.generateButton = customtkinter.CTkButton(
+            self.generateFrame, text="Generate Sweatbox file", command=self.generate)
+        self.generateButton.grid(row=11, column=1)
+
+        self.entry = customtkinter.CTkEntry(
+            self.generateFrame, placeholder_text=self.numberOfPlanes.get())
+        self.entry.grid(row=10, column=1)
+
+    def placeSliders(self) -> None:
 
         # VFR Traffic
         self.vfrLabel = customtkinter.CTkLabel(
-            self, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
+            self.configFrame, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
         self.vfrLabel.grid(row=2, column=0, padx=20, pady=20)
 
         vfrSlider = customtkinter.CTkSlider(
-            self, from_=0, to=100, variable=self.vfrPercentage, command=self.updateVFRLabel)
+            self.configFrame, from_=0, to=100, variable=self.vfrPercentage, command=self.updateVFRLabel)
         vfrSlider.grid(row=3, column=0, padx=20, pady=(0, 20))
 
         # Invalid Routes
         self.invalidRouteLabel = customtkinter.CTkLabel(
-            self, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
+            self.configFrame, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
         self.invalidRouteLabel.grid(row=4, column=0, padx=20, pady=20)
 
         invalidRouteIFR = customtkinter.CTkSlider(
-            self, from_=0, to=100, variable=self.invalidRoutePercentage, command=self.updateInvalidRouteLabel)
+            self.configFrame, from_=0, to=100, variable=self.invalidRoutePercentage, command=self.updateInvalidRouteLabel)
         invalidRouteIFR.grid(row=5, column=0, padx=20, pady=(0, 20))
 
         # Invalid Levels
         self.invalidLevelLabel = customtkinter.CTkLabel(
-            self, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
+            self.configFrame, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
         self.invalidLevelLabel.grid(row=6, column=0, padx=20, pady=20)
 
         invalidLevelIFR = customtkinter.CTkSlider(
-            self, from_=0, to=100, variable=self.invalidLevelPercentage, command=self.updateInvalidLevelLabel)
+            self.configFrame, from_=0, to=100, variable=self.invalidLevelPercentage, command=self.updateInvalidLevelLabel)
         invalidLevelIFR.grid(row=7, column=0, padx=20, pady=20)
 
         # General Flightplan Errors
         self.fplanErrorsLabel = customtkinter.CTkLabel(
-            self, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
+            self.configFrame, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
         self.fplanErrorsLabel.grid(row=8, column=0, padx=20, pady=20)
 
         fplanErrors = customtkinter.CTkSlider(
-            self, from_=0, to=100, variable=self.fplanErrorsPercentage, command=self.updateFplanErrorsLabel)
+            self.configFrame, from_=0, to=100, variable=self.fplanErrorsPercentage, command=self.updateFplanErrorsLabel)
         fplanErrors.grid(row=9, column=0, padx=20, pady=20)
+
+    def placeAirportSelect(self) -> None:
+        self.airportSelectButton = customtkinter.CTkButton(
+            self.airportSelectFrame, text="EGPH", command=self.switchAirport)
+        self.airportSelectButton.grid(row=1, column=0, padx=20, pady=(20, 20))
+
+    def generate(self) -> None:
+        print("Generating")
 
     def updateVFRLabel(self, value) -> None:
         self.vfrLabel.configure(
@@ -75,6 +129,9 @@ class App(customtkinter.CTk):
     def updateFplanErrorsLabel(self, value) -> None:
         self.fplanErrorsLabel.configure(
             text=f"Percentage of Flightplan Errors: {int(value)}%")
+
+    def switchAirport(self) -> None:
+        ...
 
 
 if __name__ == "__main__":
