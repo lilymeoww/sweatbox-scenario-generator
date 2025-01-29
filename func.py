@@ -119,7 +119,7 @@ def generate_random_pilot(dep, vfr_factor: int, incorrect_factor: int, level_fac
             elif chosen_error == "dep":
                 with open("adepError.txt", "r") as f:
                     lines = f.readlines()
-                    dep = random.choice(lines)
+                    dep = random.choice(lines).strip()
         return cs, lat, long, hdg, ac_type, crz.strip(), dep, dest, rmk, rules, rte, pseudo_route
 
     except ValueError as ve:
