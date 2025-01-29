@@ -3,6 +3,7 @@ from tkinter import filedialog
 import customtkinter
 import os
 import re
+from utils import generateSweatboxText
 
 
 class App(customtkinter.CTk):
@@ -129,7 +130,7 @@ class App(customtkinter.CTk):
 
     def getSectorFile(self) -> str:
         if not self.sectorFileLocation:
-            ukPack = self.getFilePath("UK controller Pack")
+            ukPack = self.selectDirectory("UK controller Pack")
             self.sectorFileLocation = f"{ukPack}/Data/Sector"
             self.writeOptions()
             sector_files = os.listdir(self.sectorFileLocation)
@@ -157,11 +158,16 @@ class App(customtkinter.CTk):
             configFile.write(f"{self.sectorFileLocation},")
             configFile.write(f"{self.outputDirectory},")
 
-    def getFilePath(self, dir: str) -> str:
+    def selectDirectory(self, dir: str) -> str:
         return filedialog.askdirectory(title=f"Select {dir}")
 
     def generate(self) -> None:
-        ...
+        self.sweatboxContents = generateSweatboxText()
+        if not self.outputDirectory:
+            self.outputDirectory = self.selectDirectory("Output")
+        self.writeOptions()
+        with open(f"{self.outputDirectory}/sweatbox.txt", "w")as outFile:
+            outFile.write(self.sweatboxContents)
 
     def updateVFRLabel(self, value) -> None:
         self.vfrLabel.configure(
