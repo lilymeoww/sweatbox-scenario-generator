@@ -165,9 +165,10 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             string.ascii_uppercase) + random.choice(string.ascii_uppercase)
         rules = "I"
         dest = random.choice(chosenCallsign[1:])
+
         for type_ in types:
-            if type_ == chosenCallsign[0]:
-                ac_type = random.choice(type_[1:])
+            if type_.split(",")[0] == chosenCallsign[0]:
+                ac_type = random.choice(type_.split(",")[1:])
                 break
         else:
             ac_type = "UNKNOWN"
@@ -224,7 +225,6 @@ def get_route(departure, arrival, incorrect_factor: int):
 
         for route in routes:
             route_str = route.split(",")[0]
-            print(f"{route_str=}, {departure=}, {arrival=}")
 
             if route_str.split(" ")[0].strip() == departure and route_str.split(" ")[-1].strip() == arrival:
                 # print(f"Route found: {route.split(',')[1].strip()}")
