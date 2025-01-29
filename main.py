@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     # Adding Pilots
     while True:
-        add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
+        add_more = input("Add more pilots? (M)anual, (A)uto, (N)o: ").lower()
         if add_more in ['m', 'a', 'n']:
             break
         print("Invalid option. Please enter 'm', 'a', or 'n'.")
@@ -173,7 +173,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
 
-        add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
+        add_more = input("Add more pilots? (M)anual, (A)uto, (N)o: ").lower()
 
     # Save scenario to file
     try:
