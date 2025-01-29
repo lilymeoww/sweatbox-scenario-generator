@@ -75,14 +75,15 @@ class Scenario:
 
 
 if __name__ == "__main__":
+    # Load Main Airprot Config Data
     selected = input("Select airport: EGPH, EGSS, EGCC, EGKK\n").upper()
     with open("airportConfig.json") as configData:
         airportConfig = json.load(configData)
     selected = airportConfig.get(selected)
     airport = Airport(selected.get("ICAO"), selected.get("elevation"), selected.get("runway"), selected.get("position"))
 
+    # Load Runway Approach Data
     approaches = selected.get("approachData")
-    print(len(selected.get("approachData")))
     app_data = ""
     for counter in range(len(selected.get("approachData"))):
         app_data += approaches.get("app"+ str((counter + 1))) + "\n"
