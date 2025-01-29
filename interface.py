@@ -142,6 +142,7 @@ class App(customtkinter.CTk):
                         self.sectorFileLocation, file)
                     break
 
+        # TODO: Get the things we need from the SF / Perhaps move to `utils.py`??
         with open(sectorFilePath, "r")as sf:
             ...  # process
 
@@ -166,6 +167,7 @@ class App(customtkinter.CTk):
         if not self.outputDirectory:
             self.outputDirectory = self.selectDirectory("Output")
         self.writeOptions()
+        # TODO : Update the naming - let the user choose the name?
         with open(f"{self.outputDirectory}/sweatbox.txt", "w")as outFile:
             outFile.write(self.sweatboxContents)
 
