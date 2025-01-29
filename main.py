@@ -133,7 +133,7 @@ if __name__ == "__main__":
         add_more = input("Add more pilots? (Manual, Auto, No): ").lower()
         if add_more in ['m', 'a', 'n']:
             break
-        print("Invalid option. Please enter 'Manual', 'Auto', or 'No'.")
+        print("Invalid option. Please enter 'm', 'a', or 'n'.")
 
     while add_more != "n":
         try:
