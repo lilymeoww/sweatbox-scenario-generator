@@ -24,7 +24,8 @@ class App(customtkinter.CTk):
         self.grid_columnconfigure(0, weight=0, minsize=240)
         self.grid_columnconfigure(1, weight=2)
         self.grid_columnconfigure(2, weight=0, minsize=240)
-        self.grid_rowconfigure((0, 1, 2, 3), weight=1)
+        self.grid_rowconfigure((0, 1, 2), weight=1)
+        self.grid_rowconfigure(3, weight=0)
 
         self.airportSelectFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
@@ -44,6 +45,8 @@ class App(customtkinter.CTk):
         self.configFrame.grid(row=0, column=1, rowspan=4,
                               columnspan=1, sticky="nsew", padx=5, pady=5)
 
+        self.placeSliders()
+
         self.summaryFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
         self.summaryFrame.grid(row=0, column=2, rowspan=3,
@@ -57,16 +60,23 @@ class App(customtkinter.CTk):
         self.generateFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
         self.generateFrame.grid(row=3, column=2, sticky="nsew", padx=5, pady=5)
+        self.generateFrame.grid_columnconfigure(0, weight=1)
+        self.generateFrame.grid_rowconfigure(2, weight=1)
 
-        self.placeSliders()
-
-        self.generateButton = customtkinter.CTkButton(
-            self.generateFrame, text="Generate Sweatbox file", command=self.generate)
-        self.generateButton.grid(row=11, column=1)
+        customtkinter.CTkLabel(self.generateFrame, text="Number of Planes",
+                               fg_color="transparent").grid(row=0, column=0, padx=20, pady=(10, 5))
 
         self.entry = customtkinter.CTkEntry(
             self.generateFrame, placeholder_text=self.numberOfPlanes.get())
-        self.entry.grid(row=10, column=1)
+        self.entry.grid(row=1, column=0, padx=20, pady=(5, 10))
+
+        self.manualAdd = customtkinter.CTkButton(
+            self.generateFrame, text="Add Pilot Manually", command=self.addManualPilot)
+        self.manualAdd.grid(row=2, column=0, padx=20, pady=10)
+
+        self.generateButton = customtkinter.CTkButton(
+            self.generateFrame, text="Generate Sweatbox file", command=self.generate)
+        self.generateButton.grid(row=3, column=0, padx=20, pady=10)
 
     def placeSliders(self) -> None:
 
@@ -81,7 +91,7 @@ class App(customtkinter.CTk):
 
         # Invalid Routes
         self.invalidRouteLabel = customtkinter.CTkLabel(
-            self.configFrame, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
+            self.configFrame, text=f"Percentage of Invalid Routes: 0%", fg_color="transparent", justify="left")
         self.invalidRouteLabel.grid(row=4, column=0, padx=20, pady=20)
 
         invalidRouteIFR = customtkinter.CTkSlider(
@@ -90,7 +100,7 @@ class App(customtkinter.CTk):
 
         # Invalid Levels
         self.invalidLevelLabel = customtkinter.CTkLabel(
-            self.configFrame, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
+            self.configFrame, text=f"Percentage of Invalid Level: 0%", fg_color="transparent", justify="left")
         self.invalidLevelLabel.grid(row=6, column=0, padx=20, pady=20)
 
         invalidLevelIFR = customtkinter.CTkSlider(
@@ -99,7 +109,7 @@ class App(customtkinter.CTk):
 
         # General Flightplan Errors
         self.fplanErrorsLabel = customtkinter.CTkLabel(
-            self.configFrame, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
+            self.configFrame, text=f"Percentage of Flightplan Errors: 0%", fg_color="transparent", justify="left")
         self.fplanErrorsLabel.grid(row=8, column=0, padx=20, pady=20)
 
         fplanErrors = customtkinter.CTkSlider(
@@ -131,6 +141,9 @@ class App(customtkinter.CTk):
             text=f"Percentage of Flightplan Errors: {int(value)}%")
 
     def switchAirport(self) -> None:
+        ...
+
+    def addManualPilot(self) -> None:
         ...
 
 
