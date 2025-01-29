@@ -78,7 +78,7 @@ class Scenario:
         return scenario_file_str
 
 
-def generateSweatboxText(ukPackLocation: str, airport: str, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[str], autoPilots: int, manualPilots: str) -> str:
+def generateSweatboxText(airport: str, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[tuple[str, str]], autoPilots: int, manualPilots: list[Pilot]) -> str:
     airport = Airport("EGPH", 136, "24", "GND")  # TODO get from SF
     app_data = """ILS24:55.9560884:-3.3546135:55.9438540:-3.3907010
     ILS06:55.9437922:-3.3908724:55.9561296:-3.3544421
@@ -86,88 +86,50 @@ def generateSweatboxText(ukPackLocation: str, airport: str, app_data: str, vfrP:
     ILS:55.9436373:-3.3341400:298.0"""
     scenario = Scenario(airport, app_data)
 
-    for controller in controllers:
-        # search SF for details
-        # create new ATCO
-        ...
+    for controller, frequency in controllers:
+        facility = controller.split("_")[-1]
+        scenario.add_controller(Controller(
+            airport.icao, facility, controller, frequency))
 
-    current_sq = 0
+    current_sq = len(manualPilots)
     for _ in range(autoPilots):
-        # from below probs
-        ...
+        current_sq += 1
+        cs, lat, long, hdg, ac_type, crz, dep, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(
+            airport.icao, vfrP, invalidRouteP, invalidLevelP, fplanErrorsP)
+        alt = airport.altitude
+        sq = f"{current_sq:04}"
+        pilot = Pilot(cs, lat, long, alt, hdg, dep, sq,
+                      rules, ac_type, crz, dest, rmk, rte, pseudo_route)
+        scenario.add_pilot(pilot)
 
-    # add manual pilots, probably complied in interface code
+    for pilot in manualPilots:
+        scenario.add_pilot(pilot)
 
-    # either write to file, or return string to interface, and prompt user to save
+    return scenario.generate_scenario()
 
 
 if __name__ == "__main__":
-
-    # Adding Controllers
-    while input("Add more controllers? (y/n): ").lower() == "y":
-        try:
-            name = input("Enter controller callsign: ").upper().strip()
-            freq = input("Enter controller freq: ").strip()
-            controller = Controller(airport.icao, "GND", name, freq)
-            scenario.add_controller(controller)
-        except Exception as e:
-            print(f"Error adding controller: {e}. Please try again.")
-
     current_sq = 0
 
-    # Adding Pilots
-    while True:
-        add_more = input("Add more pilots? (M)anual, (A)uto, (N)o: ").lower()
-        if add_more in ['m', 'a', 'n']:
-            break
-        print("Invalid option. Please enter 'm', 'a', or 'n'.")
+    current_sq += 1
+    if add_more == "m":
+        cs = input("Enter c/s: ")
+        lat = input("Enter latitude: ")
+        long = input("Enter longitude: ")
+        alt = airport.altitude
+        hdg = int(input("Enter a/c heading (0-359): ")) % 360
+        dep = airport.icao
+        sq = f"{current_sq:04}"
+        rules = input("Enter a/c flight rules (I/V): ").upper()
+        input_ac_type = input("Enter a/c type as displayed on fpln: ")
+        cruise_fl = input("Enter cruise level as altitude: ")
+        dest = input("Enter aircraft destination airport: ")
+        rmk = input("Enter voice rules (v, r, t, or empty): ")
 
-    while add_more != "n":
-        try:
-            current_sq += 1
-            if add_more == "m":
-                cs = input("Enter c/s: ")
-                lat = input("Enter latitude: ")
-                long = input("Enter longitude: ")
-                alt = airport.altitude
-                hdg = int(input("Enter a/c heading (0-359): ")) % 360
-                dep = airport.icao
-                sq = f"{current_sq:04}"
-                rules = input("Enter a/c flight rules (I/V): ").upper()
-                input_ac_type = input("Enter a/c type as displayed on fpln: ")
-                cruise_fl = input("Enter cruise level as altitude: ")
-                dest = input("Enter aircraft destination airport: ")
-                rmk = input("Enter voice rules (v, r, t, or empty): ")
+        route, pseudo_route = ("", "")
+        if rules == "I":
+            route, pseudo_route = get_route(dep, dest)
 
-                route, pseudo_route = ("", "")
-                if rules == "I":
-                    route, pseudo_route = get_route(dep, dest)
-
-                pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules,
-                              input_ac_type, cruise_fl, dest, rmk, route, pseudo_route)
-                scenario.add_pilot(pilot)
-
-            elif add_more == "a":
-                try:
-                    cs, lat, long, hdg, ac_type, crz, dep, dest, rmk, rules, rte, pseudo_route = generate_random_pilot(
-                        airport.icao, vfr_factor, incorrect_factor, level_factor, entry_error_factor)
-                    alt = airport.altitude
-                    sq = f"{current_sq:04}"
-                    pilot = Pilot(cs, lat, long, alt, hdg, dep, sq,
-                                  rules, ac_type, crz, dest, rmk, rte, pseudo_route)
-                    scenario.add_pilot(pilot)
-                except Exception as e:
-                    print(f"Error generating random pilot: {e}")
-
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
-
-        add_more = input("Add more pilots? (M)anual, (A)uto, (N)o: ").lower()
-
-    # Save scenario to file
-    try:
-        with open("testsb.txt", "w") as scenario_file:
-            scenario_file.write(scenario.generate_scenario())
-        print("Written to file!")
-    except IOError as e:
-        print(f"Error writing to file: {e}")
+        pilot = Pilot(cs, lat, long, alt, hdg, dep, sq, rules,
+                      input_ac_type, cruise_fl, dest, rmk, route, pseudo_route)
+        scenario.add_pilot(pilot)
