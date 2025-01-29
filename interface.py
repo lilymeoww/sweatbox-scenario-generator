@@ -294,7 +294,7 @@ class App(customtkinter.CTk):
         routeEntry.grid(row=10, column=1, pady=5, padx=5)
 
         save_button = customtkinter.CTkButton(
-            newWindow, text="Save", command=save_pilot)
+            newWindow, text="Add pilot", command=save_pilot)
         save_button.grid(row=11, column=0, columnspan=2, pady=20)
 
 
