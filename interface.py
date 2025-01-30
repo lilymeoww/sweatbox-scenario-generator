@@ -5,6 +5,7 @@ import os
 import re
 import json
 from utils import generateSweatboxText, Pilot, Airport, Controller
+import tkintermapview
 
 
 class App(customtkinter.CTk):
@@ -73,6 +74,15 @@ class App(customtkinter.CTk):
             self, corner_radius=12)
         self.mapFrame.grid(row=0, column=1, rowspan=4,
                            columnspan=1, sticky="nsew", padx=5, pady=5)
+        self.mapFrame.grid_rowconfigure(0, weight=1)
+        self.mapFrame.grid_columnconfigure(0, weight=1)
+
+        self.map_widget = tkintermapview.TkinterMapView(
+            self.mapFrame, corner_radius=12)
+        self.map_widget.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        # TODO make Dynamic
+        self.map_widget.set_position(55.9505, -3.3612)
+        self.map_widget.set_zoom(15)
 
         self.summaryFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
