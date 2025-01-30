@@ -1,6 +1,7 @@
 import os
 import string
 import random
+import json
 from dotenv import load_dotenv
 
 # load_dotenv()
@@ -58,12 +59,14 @@ class Pilot:
 
 
 class Stand:
-    def __init__(self, airport, number, lat, long, heading):
-        self.airport = airport
+    def __init__(self, number, lat, long, heading):
         self.number = number
         self.lat = lat
         self.long = long
         self.heading = heading
+
+    def __repr__(self):
+        return f"Stand(number={self.number}, lat={self.lat}, long={self.long}, heading={self.heading})"
 
 
 class Scenario:
@@ -115,28 +118,31 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     vfrCallsignsUsed = set()
     pilots = []
 
-    with open("callsignsVFR.txt", "r")as f:
-        callsigns = {data.split(",")[0] for data in f.read().splitlines()}
+    with open("rsc/stands.json") as jsonData:
+        temp = json.load(jsonData)
+        stands = temp.get(dep.icao)
 
-    with open("stands.txt", "r")as f:
-        stands = {Stand(data.split(",")[0], data.split(",")[1], data.split(",")[2],
-                        data.split(",")[3], data.split(",")[4]) for data in f.read().splitlines()}
+    with open("rsc/callsignsVFR.json") as jsonData:
+            temp = json.load(jsonData)
+    callsigns = temp.get("callsigns")
+    
     current_sq = 0
     for _ in range(numberOfVfr):
         current_sq += 1
-        callsigns = callsigns - vfrCallsignsUsed
-        stands = stands - standsUsed
+        #callsigns = callsigns - vfrCallsignsUsed
+        #stands = stands - standsUsed
         cs = random.choice(list(callsigns))
-        vfrCallsignsUsed.add(cs)
+        callsigns.pop(cs, None)
+        #vfrCallsignsUsed.add(cs)
         rules = "V"
         dest = random.choice(
             ["EGPF", "EGPB", "EGNX", "EGPC", "EGAA", "EGPH", "EGLK", "EGLF", "EGMA", "EGFF"])
         ac_type = random.choice(["P28A", "C172", "C152", "DA42", "SR22"])
         stand = random.choice(list(stands))
-        standsUsed.add(stand)
-        lat = stand.lat
-        long = stand.long
-        hdg = int(((int(stand.heading) * 2.88) + 0.5)) << 2
+        print(stand)
+        selectedStand = stands.get(stand)
+        stands.pop(stand)
+        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
         sq = sq = f"{current_sq:04}"
         crz = (500 * random.randint(1, 3)) + 1000
         rmk = "v"
@@ -144,8 +150,9 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
                       dep.icao, sq, rules, ac_type, crz, dest, rmk, rte, ""))
 
-    with open("callsignsIFR.txt", "r")as f:
-        callsigns = [d.split(",") for d in f.read().splitlines()]
+    with open("rsc/callsignsIFR.json") as jsonData:
+            temp = json.load(jsonData)
+    callsigns = temp.get("callsigns")
 
     with open("aircrafttypes.txt", "r")as f:
         types = f.read().splitlines()
@@ -155,25 +162,26 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         sq = sq = f"{current_sq:04}"
         depAirport = dep.icao
 
-        stands = stands - standsUsed
-        chosenCallsign = random.choice(callsigns)
-        cs = chosenCallsign[0] + str(random.randint(10, 99)) + random.choice(
+        #stands = stands - standsUsed
+        chosenCallsign = random.choice(list(callsigns))
+        cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
             string.ascii_uppercase) + random.choice(string.ascii_uppercase)
         rules = "I"
-        dest = random.choice(chosenCallsign[1:])
+        possDest = callsigns[chosenCallsign].split(",")
+        dest = random.choice(possDest)
 
         for type_ in types:
-            if type_.split(",")[0] == chosenCallsign[0]:
+            if type_.split(",")[0] == chosenCallsign:
                 ac_type = random.choice(type_.split(",")[1:])
                 break
         else:
             ac_type = "UNKNOWN"
 
         stand = random.choice(list(stands))
-        standsUsed.add(stand)
-        lat = stand.lat
-        long = stand.long
-        hdg = int(((int(stand.heading) * 2.88) + 0.5)) << 2
+        selectedStand = stands.get(stand)
+        stands.pop(stand)
+        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
+        standsUsed.add(stand) # TODO: Remove.
         rmk = "v"
         rte, crz = get_route(dep.icao, dest, incorrect_factor)
         if random.randint(1, 100) <= level_factor:
