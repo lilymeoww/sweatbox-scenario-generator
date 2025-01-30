@@ -85,7 +85,11 @@ class App(customtkinter.CTk):
         self.mapWidget.set_position(55.9505, -3.3612)
         self.mapWidget.set_zoom(15)
         image = Image.open("icons8-plane-50.png")
-        photo = ImageTk.PhotoImage(image)
+        # Resize the image to 25x25 pixels
+        resized_image = image.resize((25, 25))
+        rotated_image = resized_image.rotate(
+            45)  # Rotate the image by 45 degrees
+        photo = ImageTk.PhotoImage(rotated_image)
         self.mapWidget.set_marker(
             55.9505, -3.3612, icon=photo)
 
