@@ -123,21 +123,20 @@ class Stand:
 
     def __init__(self, number, lat, long, heading):
       
-    """Represents a Stand at an airport
-
-    Attributes:
-    -----------
-    airport : str
-        ICAO code of the airport the stand is at
-    number : str
-        Identifier of the stand, e.g 5 or 45C
-    lat : str
-        Latitude of the stand
-    long : str
-        Longitude of the stand
-    heading : str
-        Heading of the stand between 0 and 359 degrees
-    """
+        """Represents a Stand at an airport
+        Attributes:
+        -----------
+        airport : str
+            ICAO code of the airport the stand is at
+        number : str
+            Identifier of the stand, e.g 5 or 45C
+        lat : str
+            Latitude of the stand
+        long : str
+            Longitude of the stand
+        heading : str
+            Heading of the stand between 0 and 359 degrees
+        """
     
     # TODO: Moved to dictionary object. Class no longer required.
 
@@ -395,20 +394,5 @@ def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str,
         print("Error: routes.txt file not found.")
     return f"{departure} {arrival}", "E"
 
-
-# def validate_stand(dep):
-#     while True:
-#         user_stand = input("Enter stand number: ").upper()
-#         try:
-#             with open("stands.txt", "r") as standfile:
-#                 stands = standfile.readlines()
-#                 for stand in stands:
-#                     stand = stand.split(",")
-#                     if stand[0] == dep and stand[1] == user_stand:
-#                         return stand[2], stand[3], stand[4].strip()
-#             print("Please enter a valid stand number.")
-#         except FileNotFoundError:
-#             print("Error: stands.txt file not found.")
-#             break
 if __name__ == "__main__":
     ...
