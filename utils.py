@@ -39,7 +39,7 @@ class Controller:
     airport_icao : str
         ICAO code of the airport, e.g. EGPH
     facility : str
-        Position of the controller, e.g. TWR or APP
+        Position of the Mentor, e.g. GND for OBS -> S1
     name : str
         Log-on callsign of the controller e.g. EGPH_TWR
     frequency : str
@@ -204,7 +204,7 @@ class Scenario:
         return scenario_file_str
 
 
-def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[tuple[str, str]], autoPilots: int, manualPilots: list[Pilot]) -> str:
+def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot]) -> str:
     """Generates pilots and controllers, adds them to a scenario and generates the resulting text
 
     Args:
@@ -214,7 +214,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
         invalidRouteP (int): Percentage of aircraft with invalid routes
         invalidLevelP (int): Percentage of aircraft with invalid levels
         fplanErrorsP (int): Percentage of general flightplan errors
-        controllers (list[tuple[str, str]]): List of controllers in the form (callsign, frequency)
+        controllers (list[Controller]): List of controllers
         autoPilots (int): Number of pilots to generate automatically
         manualPilots (list[Pilot]): List of manual pilots to add
 
@@ -223,11 +223,8 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
     """
     scenario = Scenario(airport, app_data)
 
-    # add controllers
-    for controller, frequency in controllers:
-        facility = controller.split("_")[-1]
-        scenario.add_controller(Controller(
-            airport.icao, facility, controller, frequency))
+    for controller in controllers:
+        scenario.add_controller(controller)
 
     pilots = generate_random_plans(autoPilots, airport, vfrP,
                                    invalidRouteP, invalidLevelP, fplanErrorsP)

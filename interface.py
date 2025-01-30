@@ -4,7 +4,7 @@ import customtkinter
 import os
 import re
 import json
-from utils import generateSweatboxText, Pilot, Airport
+from utils import generateSweatboxText, Pilot, Airport, Controller
 
 
 class App(customtkinter.CTk):
@@ -219,11 +219,25 @@ class App(customtkinter.CTk):
         """
         return filedialog.askdirectory(title=f"Select {dir}")
 
+    def getControllers(self) -> list[Controller]:
+        with open("rsc/controllers.json")as f:
+            data = json.load(f)
+        controllers = []
+        for airport in self.activeControllers:
+            for pos in self.activeControllers[airport]:
+                freq = data[airport][pos]
+                controllers.append(Controller(
+                    airport, "GND", f"{airport}_{pos}", freq))
+
+        return controllers
+
     def generate(self) -> None:
         """Generate the sweatbox file, and destroy the window
         """
+        controllers = self.getControllers()
+
         self.sweatboxContents = generateSweatboxText(self.currentAirport, self.approachData, int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
-                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), [("EGPH_TWR", "118,705"), ("EGPH_APP", "121.205")], int(self.numberOfPlanes.get()), self.manualPilots)
+                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(self.numberOfPlanes.get()), self.manualPilots)
         if not self.outputDirectory:
             self.outputDirectory = self.selectDirectory("Output")
         self.writeOptions()
