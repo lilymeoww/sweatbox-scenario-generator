@@ -240,8 +240,19 @@ class App(customtkinter.CTk):
             numberOfPlanes = 20
         else:
             numberOfPlanes = self.numberOfPlanesEntry.get()
+
+        print(f"SYSTEM: GENERATING SWEATBOX FILE")
+        print(f"SYSTEM: {numberOfPlanes=}")
+        print(f"SYSTEM: {self.vfrPercentage.get()=}%")
+        print(f"SYSTEM: {self.invalidRoutePercentage.get()=}%")
+        print(f"SYSTEM: {self.invalidLevelPercentage.get()=}%")
+        print(f"SYSTEM: {self.fplanErrorsPercentage.get()=}%")
+
         self.sweatboxContents = generateSweatboxText(self.currentAirport, self.approachData, int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots)
+
+        print(f"SYSTEM: GENERATED SWEATBOX FILE")
+
         if not self.outputDirectory:
             self.outputDirectory = self.selectDirectory("Output")
         self.writeOptions()

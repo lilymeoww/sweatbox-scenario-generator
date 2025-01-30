@@ -271,7 +271,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             ["EGPF", "EGPB", "EGNX", "EGPC", "EGAA", "EGPH", "EGLK", "EGLF", "EGMA", "EGFF"])
         ac_type = random.choice(["P28A", "C172", "C152", "DA42", "SR22"])
         stand = random.choice(list(stands))
-        print(stand)
+        print(f"SYSTEM: VFR {cs} ASSIGNED TO STAND {stand}")
         selectedStand = stands.get(stand)
         stands.pop(stand)
         lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
@@ -311,11 +311,11 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             ac_type = "UNKNOWN"
 
         stand = random.choice(list(stands))
+        print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
         selectedStand = stands.get(stand)
         stands.pop(stand)
         lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
             ",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
-        standsUsed.add(stand)  # TODO: Remove.
         rmk = "v"
         rte, crz = get_route(dep.icao, dest, incorrect_factor)
         if random.randint(1, 100) <= level_factor:
@@ -376,15 +376,13 @@ def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str,
             route_str = route.split(",")[0]
 
             if route_str.split(" ")[0].strip() == departure and route_str.split(" ")[-1].strip() == arrival:
-                # print(f"Route found: {route.split(',')[1].strip()}")
                 poss_routes.append(
                     [route_str.replace("\n", ""), route.split(",")[1].strip()])
-                # print(poss_routes)
         route_chosen = random.choice(poss_routes)
         return route_chosen[0], route_chosen[1]
 
     except FileNotFoundError:
-        print("Error: routes.txt file not found.")
+        print("ERROR: routes.txt file not found!")
     return f"{departure} {arrival}", "E"
 
 
