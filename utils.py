@@ -2,11 +2,12 @@ import os
 import string
 import random
 import json
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 # load_dotenv()
 
 # print(os.environ["MAP_API_KEY"])
+
 
 class Airport:
     """Represents an airport
@@ -119,38 +120,37 @@ class Pilot:
             f"INITIALPSEUDOPILOT:{self.dep}_M_GND")
 
 
-class Stand:
+# class Stand:
+#     """Represents a Stand at an airport
 
-    def __init__(self, number, lat, long, heading):
-      
-    """Represents a Stand at an airport
+#     Attributes:
+#     -----------
+#     airport : str
+#         ICAO code of the airport the stand is at
+#     number : str
+#         Identifier of the stand, e.g 5 or 45C
+#     lat : str
+#         Latitude of the stand
+#     long : str
+#         Longitude of the stand
+#     heading : str
+#         Heading of the stand between 0 and 359 degrees
+#     """
 
-    Attributes:
-    -----------
-    airport : str
-        ICAO code of the airport the stand is at
-    number : str
-        Identifier of the stand, e.g 5 or 45C
-    lat : str
-        Latitude of the stand
-    long : str
-        Longitude of the stand
-    heading : str
-        Heading of the stand between 0 and 359 degrees
-    """
-    
-    # TODO: Moved to dictionary object. Class no longer required.
+#     def __init__(self, number, lat, long, heading):
 
-    def __init__(self, airport: str, number: str, lat: str, long: str, heading: str):
-        self.airport = airport
+#         # TODO: Moved to dictionary object. Class no longer required.
 
-        self.number = number
-        self.lat = lat
-        self.long = long
-        self.heading = heading
+#     def __init__(self, airport: str, number: str, lat: str, long: str, heading: str):
+#         self.airport = airport
 
-    def __repr__(self):
-        return f"Stand(number={self.number}, lat={self.lat}, long={self.long}, heading={self.heading})"
+#         self.number = number
+#         self.lat = lat
+#         self.long = long
+#         self.heading = heading
+
+#     def __repr__(self):
+#         return f"Stand(number={self.number}, lat={self.lat}, long={self.long}, heading={self.heading})"
 
 
 class Scenario:
@@ -265,17 +265,17 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         stands = temp.get(dep.icao)
 
     with open("rsc/callsignsVFR.json") as jsonData:
-            temp = json.load(jsonData)
+        temp = json.load(jsonData)
     callsigns = temp.get("callsigns")
-    
+
     current_sq = 0
     for _ in range(numberOfVfr):
         current_sq += 1
-        #callsigns = callsigns - vfrCallsignsUsed
-        #stands = stands - standsUsed
+        # callsigns = callsigns - vfrCallsignsUsed
+        # stands = stands - standsUsed
         cs = random.choice(list(callsigns))
         callsigns.pop(cs, None)
-        #vfrCallsignsUsed.add(cs)
+        # vfrCallsignsUsed.add(cs)
         rules = "V"
         dest = random.choice(
             ["EGPF", "EGPB", "EGNX", "EGPC", "EGAA", "EGPH", "EGLK", "EGLF", "EGMA", "EGFF"])
@@ -284,7 +284,8 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         print(stand)
         selectedStand = stands.get(stand)
         stands.pop(stand)
-        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
+        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
+            ",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
         sq = sq = f"{current_sq:04}"
         crz = (500 * random.randint(1, 3)) + 1000
         rmk = "v"
@@ -293,7 +294,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
                       dep.icao, sq, rules, ac_type, crz, dest, rmk, rte, ""))
 
     with open("rsc/callsignsIFR.json") as jsonData:
-            temp = json.load(jsonData)
+        temp = json.load(jsonData)
     callsigns = temp.get("callsigns")
 
     with open("aircrafttypes.txt", "r")as f:
@@ -304,7 +305,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         sq = f"{current_sq:04}"
         depAirport = dep.icao
 
-        #stands = stands - standsUsed
+        # stands = stands - standsUsed
         chosenCallsign = random.choice(list(callsigns))
         cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
             string.ascii_uppercase) + random.choice(string.ascii_uppercase)
@@ -322,8 +323,9 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         stand = random.choice(list(stands))
         selectedStand = stands.get(stand)
         stands.pop(stand)
-        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
-        standsUsed.add(stand) # TODO: Remove.
+        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
+            ",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
+        standsUsed.add(stand)  # TODO: Remove.
         rmk = "v"
         rte, crz = get_route(dep.icao, dest, incorrect_factor)
         if random.randint(1, 100) <= level_factor:
