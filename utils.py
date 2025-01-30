@@ -311,6 +311,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
         selectedStand = stands.get(stand)
         stands.pop(stand)
+        standsUsed.add(stand)  # TODO: Remove once json'd
         lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
             ",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
         rmk = "v"
