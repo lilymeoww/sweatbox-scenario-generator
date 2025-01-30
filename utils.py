@@ -227,7 +227,19 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
 
 
 def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_factor: int, level_factor: int, entry_error_factor: int) -> list[Pilot]:
+    """Generates a given number of VFR and IFR flightplans
 
+    Args:
+        amount (int): Total number of flightplans
+        dep (Airport): Airport Scenario is based at
+        vfr_factor (int): Percentage of VFR aircraft
+        incorrect_factor (int): Percentage of incorrect routes
+        level_factor (int): Percentage of incorrect levels
+        entry_error_factor (int): Percentage of general flightplan errors 
+
+    Returns:
+        list[Pilot]: Returns a list of pilots with the required settings
+    """
     numberOfVfr = int(amount * vfr_factor/100)
 
     standsUsed = set()
@@ -327,7 +339,17 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     return pilots
 
 
-def get_route(departure, arrival, incorrect_factor: int):
+def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str, str]:
+    """Gets a route between 2 airports, with a chance of the route being invalid
+
+    Args:
+        departure (str): Departure ICAO 
+        arrival (str): Arrival ICAO
+        incorrect_factor (int): Percentage of incorrect routes
+
+    Returns:
+        tuple[str, str]: Returns the route and the cruise level
+    """
     try:
 
         if random.randint(1, 100) <= incorrect_factor:
