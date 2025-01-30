@@ -2,11 +2,6 @@ import os
 import string
 import random
 import json
-from dotenv import load_dotenv
-
-# load_dotenv()
-
-# print(os.environ["MAP_API_KEY"])
 
 class Airport:
     """Represents an airport
