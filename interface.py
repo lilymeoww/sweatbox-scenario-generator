@@ -5,6 +5,8 @@ import os
 import re
 import json
 from utils import generateSweatboxText, Pilot, Airport, Controller
+import tkintermapview
+from PIL import Image, ImageTk
 
 
 class App(customtkinter.CTk):
@@ -73,6 +75,23 @@ class App(customtkinter.CTk):
             self, corner_radius=12)
         self.mapFrame.grid(row=0, column=1, rowspan=4,
                            columnspan=1, sticky="nsew", padx=5, pady=5)
+        self.mapFrame.grid_rowconfigure(0, weight=1)
+        self.mapFrame.grid_columnconfigure(0, weight=1)
+
+        self.mapWidget = tkintermapview.TkinterMapView(
+            self.mapFrame, corner_radius=12)
+        self.mapWidget.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        # TODO make Dynamic
+        self.mapWidget.set_position(55.9505, -3.3612)
+        self.mapWidget.set_zoom(15)
+        image = Image.open("icons8-plane-50.png")
+        # Resize the image to 25x25 pixels
+        resized_image = image.resize((25, 25))
+        rotated_image = resized_image.rotate(
+            45)  # Rotate the image by 45 degrees
+        photo = ImageTk.PhotoImage(rotated_image)
+        self.mapWidget.set_marker(
+            55.9505, -3.3612, icon=photo)
 
         self.summaryFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
