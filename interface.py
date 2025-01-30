@@ -170,7 +170,7 @@ class App(customtkinter.CTk):
 
         # fPln errors
         self.invalidFplnLabel = customtkinter.CTkLabel(
-            self.sliderFrame, text=f"Percentage of Invalid Levels: 0%", fg_color="transparent", justify="left")
+            self.sliderFrame, text=f"Percentage of Flightplan errors: 0%", fg_color="transparent", justify="left")
         self.invalidFplnLabel.grid(row=6, column=0, padx=0, pady=5)
 
         invalidFplnSlider = customtkinter.CTkSlider(
