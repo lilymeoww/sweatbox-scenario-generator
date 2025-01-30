@@ -1,1 +1,3 @@
 customtkinter==5.2.2
+Pillow==11.1.0
+tkintermapview==1.29
