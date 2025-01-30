@@ -372,6 +372,7 @@ class App(customtkinter.CTk):
         controllerWindow = customtkinter.CTkToplevel(self)
         controllerWindow.title("Add Controllers")
         controllerWindow.geometry("350x500")
+        controllerWindow.grid_columnconfigure(0, weight=1)
 
         def saveControllers() -> None:
             controllerWindow.destroy()
@@ -381,13 +382,13 @@ class App(customtkinter.CTk):
 
         save_button = customtkinter.CTkButton(
             controllerWindow, text="Add Selected Controllers", command=saveControllers)
-        save_button.grid(row=0, column=0, columnspan=2, pady=20)
+        save_button.grid(row=0, column=0, pady=20)
 
         controllerVar = tk.StringVar(value="Select Controller")
         controllerDropdown = customtkinter.CTkOptionMenu(
             controllerWindow, variable=controllerVar, values=list(controllers.keys()), command=lambda _: updateControllerInfo())
         controllerDropdown.grid(
-            row=1, column=0, columnspan=2, pady=10, padx=10)
+            row=1, column=0, pady=10, padx=10)
 
         def saveCheckboxState(controller, pos, var):
             self.activeControllers[controller][pos] = var.get()
@@ -408,7 +409,7 @@ class App(customtkinter.CTk):
                     checkbox = customtkinter.CTkCheckBox(
                         controllerWindow, text=f"{selected_controller}_{pos} ({freq})", variable=var)
                     checkbox.grid(row=2 + list(info.keys()).index(pos),
-                                  column=0, columnspan=2, pady=5, padx=10)
+                                  column=0, pady=5, padx=10)
                     var.trace_add("write", lambda *args, pos=pos,
                                   var=var: saveCheckboxState(selected_controller, pos, var))
 
