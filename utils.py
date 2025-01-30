@@ -251,12 +251,12 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     pilots = []
 
     with open("rsc/stands.json") as jsonData:
-        temp = json.load(jsonData)
-        stands = temp.get(dep.icao)
+        JSONInjest = json.load(jsonData)
+        stands = JSONInjest.get(dep.icao)
 
     with open("rsc/callsignsVFR.json") as jsonData:
-        temp = json.load(jsonData)
-    callsigns = temp.get("callsigns")
+        JSONInjest = json.load(jsonData)
+    callsigns = JSONInjest.get("callsigns")
 
     current_sq = 0
     for _ in range(numberOfVfr):
@@ -284,8 +284,8 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
                       dep.icao, sq, rules, ac_type, crz, dest, rmk, rte, ""))
 
     with open("rsc/callsignsIFR.json") as jsonData:
-        temp = json.load(jsonData)
-    callsigns = temp.get("callsigns")
+        JSONInjest = json.load(jsonData)
+    callsigns = JSONInjest.get("callsigns")
 
     with open("aircrafttypes.txt", "r")as f:
         types = f.read().splitlines()
