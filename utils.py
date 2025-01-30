@@ -8,9 +8,22 @@ from dotenv import load_dotenv
 
 # print(os.environ["MAP_API_KEY"])
 
-
 class Airport:
-    def __init__(self, icao, altitude, config, facility):
+    """Represents an airport
+
+    Attributes:
+    -----------
+    icao : str
+        ICAO code of the airport
+    altitude : int
+        Integer representation of the altitude in feet
+    config : str
+        runway in use, e.g. 24
+    facility : str
+        The position of the student, e.g. GND for OBS -> S1
+    """
+
+    def __init__(self, icao: str, altitude: int, config: str, facility: str):
         self.icao = icao
         self.altitude = altitude
         self.config = config
@@ -18,10 +31,24 @@ class Airport:
 
 
 class Controller:
-    def __init__(self, airport_icao, facility, name, frequency):
+    """Represents a controller
+
+    Attributes:
+    -----------
+    airport_icao : str
+        ICAO code of the airport, e.g. EGPH
+    facility : str
+        Position of the controller, e.g. TWR or APP
+    name : str
+        Log-on callsign of the controller e.g. EGPH_TWR
+    frequency : str
+        Channel of the controller, e.g. 118.705
+    """
+
+    def __init__(self, airport_icao: str, facility: str, name: str, frequency: str):
         self.airport_icao = airport_icao
         self.facility = facility
-        self.name = name
+        self.name = name  # TODO is this needed?
         self.frequency = frequency
 
     def __str__(self):
@@ -29,7 +56,41 @@ class Controller:
 
 
 class Pilot:
-    def __init__(self, cs, lat, long, alt, hdg, dep, sq, rules, ac_type, crz, dest, rmk, rte, pseudo_route):
+    """Represents a Pilot
+
+    Attributes:
+    -----------
+    cs : str
+        Callsign of pilot, e.g. RYR100T
+    lat : str
+        Latitude of pilot in decimal degrees
+    long : str
+        Longitude of pilot in decimal degrees
+    alt : str
+        Altitude of pilot in feet
+    hdg : str
+        Heading of the pilot, encoded using `int(((hdg * 2.88) + 0.5)) << 2`
+    dep : str
+        Departure ICAO
+    sq : str
+        Aircraft squawk code
+    rules : str
+        I or V, for IFR, or VFR
+    ac_type : str
+        Pilot aircraft type ICAO, e.g. B738
+    crz : str
+        Cruise level in feet, e.g. 37000
+    dest : str
+        Destination ICAO
+    rmk : str
+        Flight-plan remarks
+    rte : str
+        Pilot's route
+    pseudo_route : str
+        Pseudo route for aircraft
+    """
+
+    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str):
         self.cs = cs
         self.lat = lat
         self.long = long
@@ -59,7 +120,30 @@ class Pilot:
 
 
 class Stand:
+
     def __init__(self, number, lat, long, heading):
+      
+    """Represents a Stand at an airport
+
+    Attributes:
+    -----------
+    airport : str
+        ICAO code of the airport the stand is at
+    number : str
+        Identifier of the stand, e.g 5 or 45C
+    lat : str
+        Latitude of the stand
+    long : str
+        Longitude of the stand
+    heading : str
+        Heading of the stand between 0 and 359 degrees
+    """
+    
+    # TODO: Moved to dictionary object. Class no longer required.
+
+    def __init__(self, airport: str, number: str, lat: str, long: str, heading: str):
+        self.airport = airport
+
         self.number = number
         self.lat = lat
         self.long = long
@@ -70,19 +154,48 @@ class Stand:
 
 
 class Scenario:
-    def __init__(self, airport, app_data):
+    """Represents a sweatbox scenario
+
+    Attributes:
+    -----------
+    airport : Airport
+        The airport where the scenario takes place
+    app_data : str
+        Airport approach data
+    controllers : list[Controller]
+        List of controllers involved in the scenario
+    pilots : list[Pilot]
+        List of pilots involved in the scenario
+    """
+
+    def __init__(self, airport: Airport, app_data: str):
         self.airport = airport
         self.app_data = app_data
-        self.controllers = []
-        self.pilots = []
+        self.controllers: list[Controller] = []
+        self.pilots: list[Pilot] = []
 
-    def add_controller(self, controller):
+    def add_controller(self, controller: Controller) -> None:
+        """Adds a Controller to scenario file
+
+        Args:
+            controller (Controller): Controller to be added
+        """
         self.controllers.append(controller)
 
-    def add_pilot(self, pilot):
+    def add_pilot(self, pilot: Pilot) -> None:
+        """Adds pilot to scenario file
+
+        Args:
+            pilot (Pilot): Pilot to be added
+        """
         self.pilots.append(pilot)
 
-    def generate_scenario(self):
+    def generate_scenario(self) -> str:
+        """Generates contents of scenario file
+
+        Returns:
+            str: string containing the contents of scenario file
+        """
         scenario_file_str = f"PSEUDOPILOT:ALL\n\nAIRPORT_ALT:{
             self.airport.altitude}\n\n{self.app_data}\n\n"
         scenario_file_str += "".join(str(controller) +
@@ -92,14 +205,30 @@ class Scenario:
 
 
 def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[tuple[str, str]], autoPilots: int, manualPilots: list[Pilot]) -> str:
+    """Generates pilots and controllers, adds them to a scenario and generates the resulting text
+
+    Args:
+        airport (Airport): Airport the sweatbox is based at
+        app_data (str): Approach data for the airport
+        vfrP (int): Percentage of VFR aircraft
+        invalidRouteP (int): Percentage of aircraft with invalid routes
+        invalidLevelP (int): Percentage of aircraft with invalid levels
+        fplanErrorsP (int): Percentage of general flightplan errors
+        controllers (list[tuple[str, str]]): List of controllers in the form (callsign, frequency)
+        autoPilots (int): Number of pilots to generate automatically
+        manualPilots (list[Pilot]): List of manual pilots to add
+
+    Returns:
+        str: Returns string of scenario
+    """
     scenario = Scenario(airport, app_data)
 
+    # add controllers
     for controller, frequency in controllers:
         facility = controller.split("_")[-1]
         scenario.add_controller(Controller(
             airport.icao, facility, controller, frequency))
 
-    current_sq = len(manualPilots)
     pilots = generate_random_plans(autoPilots, airport, vfrP,
                                    invalidRouteP, invalidLevelP, fplanErrorsP)
     for pilot in pilots:
@@ -112,6 +241,19 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
 
 
 def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_factor: int, level_factor: int, entry_error_factor: int) -> list[Pilot]:
+    """Generates a given number of VFR and IFR flightplans
+
+    Args:
+        amount (int): Total number of flightplans
+        dep (Airport): Airport Scenario is based at
+        vfr_factor (int): Percentage of VFR aircraft
+        incorrect_factor (int): Percentage of incorrect routes
+        level_factor (int): Percentage of incorrect levels
+        entry_error_factor (int): Percentage of general flightplan errors 
+
+    Returns:
+        list[Pilot]: Returns a list of pilots with the required settings
+    """
     numberOfVfr = int(amount * vfr_factor/100)
 
     standsUsed = set()
@@ -159,7 +301,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
 
     for _ in range(amount - numberOfVfr):
         current_sq += 1
-        sq = sq = f"{current_sq:04}"
+        sq = f"{current_sq:04}"
         depAirport = dep.icao
 
         #stands = stands - standsUsed
@@ -216,7 +358,17 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     return pilots
 
 
-def get_route(departure, arrival, incorrect_factor: int):
+def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str, str]:
+    """Gets a route between 2 airports, with a chance of the route being invalid
+
+    Args:
+        departure (str): Departure ICAO 
+        arrival (str): Arrival ICAO
+        incorrect_factor (int): Percentage of incorrect routes
+
+    Returns:
+        tuple[str, str]: Returns the route and the cruise level
+    """
     try:
 
         if random.randint(1, 100) <= incorrect_factor:
@@ -244,8 +396,6 @@ def get_route(departure, arrival, incorrect_factor: int):
     return f"{departure} {arrival}", "E"
 
 
-
-
 # def validate_stand(dep):
 #     while True:
 #         user_stand = input("Enter stand number: ").upper()
@@ -260,7 +410,5 @@ def get_route(departure, arrival, incorrect_factor: int):
 #         except FileNotFoundError:
 #             print("Error: stands.txt file not found.")
 #             break
-
-
 if __name__ == "__main__":
     ...

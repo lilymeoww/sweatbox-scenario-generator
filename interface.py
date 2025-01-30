@@ -8,7 +8,9 @@ from utils import generateSweatboxText, Pilot, Airport
 
 
 class App(customtkinter.CTk):
-    def __init__(self) -> None:
+    """Contains methods for the interface and generation of the sweatbox"""
+
+    def __init__(self):
         super().__init__()
 
         # Modes: "System" (standard), "Dark", "Light"
@@ -30,13 +32,16 @@ class App(customtkinter.CTk):
         # Import initial airport data
         with open("rsc/airportConfig.json") as configData:
             airportConfigs = json.load(configData)
-        initial = airportConfigs.get("EGPH") # TODO: Un-hard code the ICAO. (Not a clue how though)
-        self.currentAirport: Airport = Airport(initial.get("ICAO"), initial.get("elevation"), initial.get("runway"), initial.get("position"))
+        # TODO: Un-hard code the ICAO. (Not a clue how though)
+        initial = airportConfigs.get("EGPH")
+        self.currentAirport: Airport = Airport(initial.get("ICAO"), initial.get(
+            "elevation"), initial.get("runway"), initial.get("position"))
 
         approaches = initial.get("approachData")
         self.approachData = ""
         for counter in range(len(initial.get("approachData"))):
-            self.approachData += approaches.get("app"+ str((counter + 1))) + "\n"
+            self.approachData += approaches.get("app" +
+                                                str((counter + 1))) + "\n"
 
         self.loadOptions()
 
@@ -63,22 +68,29 @@ class App(customtkinter.CTk):
 
         self.placeAirportSelect()
 
-        self.configFrame = customtkinter.CTkFrame(
+        self.mapFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
-        self.configFrame.grid(row=0, column=1, rowspan=4,
-                              columnspan=1, sticky="nsew", padx=5, pady=5)
-
-        self.placeSliders()
+        self.mapFrame.grid(row=0, column=1, rowspan=4,
+                           columnspan=1, sticky="nsew", padx=5, pady=5)
 
         self.summaryFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
-        self.summaryFrame.grid(row=0, column=2, rowspan=3,
+        self.summaryFrame.grid(row=0, column=2, rowspan=1,
                                sticky="nsew", padx=5, pady=5)
         self.summaryFrame.grid_columnconfigure(0, weight=1)
         self.summaryFrame.grid_rowconfigure(4, weight=1)
 
         customtkinter.CTkLabel(self.summaryFrame, text="Summary",
-                               font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=0, column=0, padx=0, pady=(20, 10))
+                               font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=0, column=0, padx=0, pady=(15, 10))
+
+        self.sliderFrame = customtkinter.CTkFrame(
+            self, corner_radius=12)
+        self.sliderFrame.grid(row=1, column=2, rowspan=2,
+                              sticky="nsew", padx=5, pady=5)
+        self.sliderFrame.grid_columnconfigure(0, weight=1)
+        self.sliderFrame.grid_rowconfigure(8, weight=1)
+
+        self.placeSliders()
 
         self.generateFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
@@ -102,49 +114,61 @@ class App(customtkinter.CTk):
         self.generateButton.grid(row=3, column=0, padx=20, pady=10)
 
     def placeSliders(self) -> None:
+        """Place the sliders on the frame
+        """
 
         # VFR Traffic
         self.vfrLabel = customtkinter.CTkLabel(
-            self.configFrame, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
-        self.vfrLabel.grid(row=2, column=0, padx=20, pady=20)
+            self.sliderFrame, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
+        self.vfrLabel.grid(row=0, column=0, padx=0, pady=10)
 
         vfrSlider = customtkinter.CTkSlider(
-            self.configFrame, from_=0, to=100, variable=self.vfrPercentage, command=self.updateVFRLabel)
-        vfrSlider.grid(row=3, column=0, padx=20, pady=(0, 20))
+            self.sliderFrame, from_=0, to=100, variable=self.vfrPercentage, command=self.updateVFRLabel)
+        vfrSlider.grid(row=1, column=0, padx=5, pady=(0, 20))
 
         # Invalid Routes
         self.invalidRouteLabel = customtkinter.CTkLabel(
-            self.configFrame, text=f"Percentage of Invalid Routes: 0%", fg_color="transparent", justify="left")
-        self.invalidRouteLabel.grid(row=4, column=0, padx=20, pady=20)
+            self.sliderFrame, text=f"Percentage of Invalid Routes: 0%", fg_color="transparent", justify="left")
+        self.invalidRouteLabel.grid(row=2, column=0, padx=0, pady=5)
 
-        invalidRouteIFR = customtkinter.CTkSlider(
-            self.configFrame, from_=0, to=100, variable=self.invalidRoutePercentage, command=self.updateInvalidRouteLabel)
-        invalidRouteIFR.grid(row=5, column=0, padx=20, pady=(0, 20))
+        invalidRouteSlider = customtkinter.CTkSlider(
+            self.sliderFrame, from_=0, to=100, variable=self.invalidRoutePercentage, command=self.updateInvalidRouteLabel)
+        invalidRouteSlider.grid(row=3, column=0, padx=5, pady=(0, 20))
 
         # Invalid Levels
         self.invalidLevelLabel = customtkinter.CTkLabel(
-            self.configFrame, text=f"Percentage of Invalid Level: 0%", fg_color="transparent", justify="left")
-        self.invalidLevelLabel.grid(row=6, column=0, padx=20, pady=20)
+            self.sliderFrame, text=f"Percentage of Invalid Levels: 0%", fg_color="transparent", justify="left")
+        self.invalidLevelLabel.grid(row=4, column=0, padx=0, pady=5)
 
-        invalidLevelIFR = customtkinter.CTkSlider(
-            self.configFrame, from_=0, to=100, variable=self.invalidLevelPercentage, command=self.updateInvalidLevelLabel)
-        invalidLevelIFR.grid(row=7, column=0, padx=20, pady=20)
+        invalidLevelSlider = customtkinter.CTkSlider(
+            self.sliderFrame, from_=0, to=100, variable=self.invalidLevelPercentage,
+            command=self.updateInvalidLevelLabel)
+        invalidLevelSlider.grid(row=5, column=0, padx=5, pady=(0, 20))
 
-        # General Flightplan Errors
-        self.fplanErrorsLabel = customtkinter.CTkLabel(
-            self.configFrame, text=f"Percentage of Flightplan Errors: 0%", fg_color="transparent", justify="left")
-        self.fplanErrorsLabel.grid(row=8, column=0, padx=20, pady=20)
+        # fPln errors
+        self.invalidFplnLabel = customtkinter.CTkLabel(
+            self.sliderFrame, text=f"Percentage of Invalid Levels: 0%", fg_color="transparent", justify="left")
+        self.invalidFplnLabel.grid(row=6, column=0, padx=0, pady=5)
 
-        fplanErrors = customtkinter.CTkSlider(
-            self.configFrame, from_=0, to=100, variable=self.fplanErrorsPercentage, command=self.updateFplanErrorsLabel)
-        fplanErrors.grid(row=9, column=0, padx=20, pady=20)
+        invalidFplnSlider = customtkinter.CTkSlider(
+            self.sliderFrame, from_=0, to=100, variable=self.fplanErrorsPercentage,
+            command=self.updateFplanErrorsLabel)
+        invalidFplnSlider.grid(row=7, column=0, padx=5, pady=(0, 20))
 
     def placeAirportSelect(self) -> None:
+        """Place airport select buttons
+        """
         self.airportSelectButton = customtkinter.CTkButton(
             self.airportSelectFrame, text="EGPH", command=self.switchAirport)
-        self.airportSelectButton.grid(row=1, column=0, padx=20, pady=(20, 20))
+        self.airportSelectButton.grid(row=1, column=0, padx=5, pady=(5, 5))
 
     def getSectorFile(self) -> str:
+        """Get the location of the sectorfile
+
+        Returns:
+            str: Path to sectorfile
+        """
+        # TODO: Work out what to do / if we need sf
         if not self.sectorFileLocation:
             ukPack = self.selectDirectory("UK controller Pack")
             self.sectorFileLocation = f"{ukPack}/Data/Sector"
@@ -163,6 +187,8 @@ class App(customtkinter.CTk):
             ...  # process
 
     def loadOptions(self) -> None:
+        """Load the option file
+        """
         if os.path.exists("sweatbox_generator.config"):
             with open("sweatbox_generator.config", "r") as configFile:
                 config = configFile.read().split(',')
@@ -171,14 +197,26 @@ class App(customtkinter.CTk):
                     self.outputDirectory = config[1]
 
     def writeOptions(self) -> None:
+        """Update the options file
+        """
         with open("sweatbox_generator.config", "w")as configFile:
             configFile.write(f"{self.sectorFileLocation},")
             configFile.write(f"{self.outputDirectory},")
 
     def selectDirectory(self, dir: str) -> str:
+        """Get the user to select the location of a directory
+
+        Args:
+            dir (str): Name of directory to find
+
+        Returns:
+            str: Path to directory
+        """
         return filedialog.askdirectory(title=f"Select {dir}")
 
     def generate(self) -> None:
+        """Generate the sweatbox file, and destroy the window
+        """
         self.sweatboxContents = generateSweatboxText(self.currentAirport, self.approachData, int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), [("EGPH_TWR", "118,705"), ("EGPH_APP", "121.205")], int(self.numberOfPlanes.get()), self.manualPilots)
         if not self.outputDirectory:
@@ -203,13 +241,15 @@ class App(customtkinter.CTk):
             text=f"Percentage of Invalid Level: {int(value)}%")
 
     def updateFplanErrorsLabel(self, value) -> None:
-        self.fplanErrorsLabel.configure(
+        self.invalidFplnLabel.configure(
             text=f"Percentage of Flightplan Errors: {int(value)}%")
 
     def switchAirport(self) -> None:
         ...
 
     def addManualPilot(self) -> None:
+        """Open a new window to add a manual pilot
+        """
         newWindow = customtkinter.CTkToplevel(self)
         newWindow.title("Add Manual Pilot")
         newWindow.geometry("350x500")
