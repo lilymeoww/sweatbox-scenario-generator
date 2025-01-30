@@ -195,6 +195,8 @@ class App(customtkinter.CTk):
                 if len(config) >= 2:
                     self.sectorFileLocation = config[0]
                     self.outputDirectory = config[1]
+        if self.outputDirectory == "()":
+            self.outputDirectory = None
 
     def writeOptions(self) -> None:
         """Update the options file
@@ -219,11 +221,21 @@ class App(customtkinter.CTk):
         """
         self.sweatboxContents = generateSweatboxText(self.currentAirport, self.approachData, int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), [("EGPH_TWR", "118,705"), ("EGPH_APP", "121.205")], int(self.numberOfPlanes.get()), self.manualPilots)
-        if not self.outputDirectory:
-            self.outputDirectory = self.selectDirectory("Output")
-        self.writeOptions()
-        # TODO : Update the naming - let the user choose the name?
-        with open(f"{self.outputDirectory}/sweatbox.txt", "w")as outFile:
+
+        if self.outputDirectory:
+            fileName = filedialog.asksaveasfilename(
+                defaultextension=".txt", filetypes=[("Text files", "*.txt")], initialdir=self.outputDirectory)
+        else:
+            fileName = filedialog.asksaveasfilename(
+                defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+
+        if not self.outputDirectory or os.path.dirname(fileName) != self.outputDirectory:
+            self.outputDirectory = os.path.dirname(fileName)
+            self.writeOptions()
+
+        if not fileName:
+            return
+        with open(fileName, "w")as outFile:
             outFile.write(self.sweatboxContents)
 
         self.destroy()
