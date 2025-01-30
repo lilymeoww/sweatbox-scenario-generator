@@ -287,8 +287,9 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         JSONInjest = json.load(jsonData)
     callsigns = JSONInjest.get("callsigns")
 
-    with open("aircrafttypes.txt", "r")as f:
-        types = f.read().splitlines()
+    with open("rsc/aircraftTypes.json") as jsonData:
+        JSONInjest = json.load(jsonData)
+    types = JSONInjest.get("callsigns")
 
     for _ in range(amount - numberOfVfr):
         current_sq += 1
@@ -303,12 +304,8 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         possDest = callsigns[chosenCallsign].split(",")
         dest = random.choice(possDest)
 
-        for type_ in types:
-            if type_.split(",")[0] == chosenCallsign:
-                ac_type = random.choice(type_.split(",")[1:])
-                break
-        else:
-            ac_type = "UNKNOWN"
+        possTypes = types[chosenCallsign].split(",")
+        acType = random.choice(possTypes)
 
         stand = random.choice(list(stands))
         selectedStand = stands.get(stand)
@@ -345,7 +342,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
                     depAirport = random.choice(lines).strip()
 
         pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
-                            depAirport, sq, rules, ac_type, crz, dest, rmk, rte, ""))
+                            depAirport, sq, rules, acType, crz, dest, rmk, rte, ""))
 
     return pilots
 
@@ -364,27 +361,23 @@ def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str,
     try:
 
         if random.randint(1, 100) <= incorrect_factor:
-            with open("invalidRoutes.txt", "r") as file:
-                poss_routes = []
-                routes = file.readlines()
+            with open("rsc/invalidRoutes.json") as jsonData:
+                JSONInjest = json.load(jsonData)
+            routes = JSONInjest.get(departure)
+            extracted = routes.get(arrival)
+            route = random.choice(extracted).split(",")
+
         else:
-            with open("routes.txt", "r") as file:
-                poss_routes = []
-                routes = file.readlines()
+            with open("rsc/routes.json") as jsonData:
+                JSONInjest = json.load(jsonData)
+            routes = JSONInjest.get(departure)
+            extracted = routes.get(arrival)
+            route = extracted.split(",")
 
-        for route in routes:
-            route_str = route.split(",")[0]
-
-            if route_str.split(" ")[0].strip() == departure and route_str.split(" ")[-1].strip() == arrival:
-                # print(f"Route found: {route.split(',')[1].strip()}")
-                poss_routes.append(
-                    [route_str.replace("\n", ""), route.split(",")[1].strip()])
-                # print(poss_routes)
-        route_chosen = random.choice(poss_routes)
-        return route_chosen[0], route_chosen[1]
+        return route[0], route[1]
 
     except FileNotFoundError:
-        print("Error: routes.txt file not found.")
+        print("Error: file not found.")
     return f"{departure} {arrival}", "E"
 
 
