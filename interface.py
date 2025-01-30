@@ -76,7 +76,7 @@ class App(customtkinter.CTk):
         self.summaryFrame.grid_rowconfigure(4, weight=1)
 
         customtkinter.CTkLabel(self.summaryFrame, text="Summary",
-                               font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=0, column=0, padx=0, pady=(20, 10))
+                               font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=0, column=0, padx=0, pady=(15, 10))
 
         self.sliderFrame = customtkinter.CTkFrame(
             self, corner_radius=12)

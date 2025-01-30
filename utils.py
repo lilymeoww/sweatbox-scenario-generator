@@ -1,12 +1,6 @@
 import os
 import string
 import random
-from dotenv import load_dotenv
-
-# load_dotenv()
-
-# print(os.environ["MAP_API_KEY"])
-
 
 class Airport:
     def __init__(self, icao, altitude, config, facility):
