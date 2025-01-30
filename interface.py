@@ -272,13 +272,25 @@ class App(customtkinter.CTk):
 
         print(f"SYSTEM: GENERATED SWEATBOX FILE")
 
-        if not self.outputDirectory:
-            self.outputDirectory = self.selectDirectory("Output")
-        self.writeOptions()
-        # TODO : Update the naming - let the user choose the name?
-        with open(f"{self.outputDirectory}/sweatbox.txt", "w")as outFile:
+        if self.outputDirectory:
+            fileName = filedialog.asksaveasfilename(
+                defaultextension=".txt", filetypes=[("Text files", "*.txt")], initialdir=self.outputDirectory)
+        else:
+            fileName = filedialog.asksaveasfilename(
+                defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+
+        if not self.outputDirectory or os.path.dirname(fileName) != self.outputDirectory:
+            self.outputDirectory = os.path.dirname(fileName)
+            self.writeOptions()
+
+        if not fileName:
+            print("ERROR: COULD NOT OUTPUT FILE")
+            return
+        with open(fileName, "w")as outFile:
             outFile.write(self.sweatboxContents)
 
+        print(f"SYSTEM: FILE WRITTEN TO {fileName}")
+        print(f"SYSTEM: BYE")
         self.destroy()
 
     def updateVFRLabel(self, value) -> None:
