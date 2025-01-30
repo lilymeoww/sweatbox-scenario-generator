@@ -35,19 +35,10 @@ class App(customtkinter.CTk):
         self.manualPilots = []
         self.activeControllers = {}
 
-        # Import initial airport data
-        with open("rsc/airportConfig.json") as configData:
-            airportConfigs = json.load(configData)
-        # TODO: Un-hard code the ICAO. (Not a clue how though)
-        initial = airportConfigs.get("EGPH")
-        self.currentAirport: Airport = Airport(initial.get("ICAO"), initial.get(
-            "elevation"), initial.get("runway"), initial.get("position"))
-
-        approaches = initial.get("approachData")
-        self.approachData = ""
-        for counter in range(len(initial.get("approachData"))):
-            self.approachData += approaches.get("app" +
-                                                str((counter + 1))) + "\n"
+        self.selectableAirports = {}
+        self.loadAirports()
+        self.activeAirport = None
+        self.switchAirport("EGPH")
 
         self.loadOptions()
 
@@ -181,9 +172,17 @@ class App(customtkinter.CTk):
     def placeAirportSelect(self) -> None:
         """Place airport select buttons
         """
-        self.airportSelectButton = customtkinter.CTkButton(
-            self.airportSelectFrame, text="EGPH", command=self.switchAirport)
-        self.airportSelectButton.grid(row=1, column=0, padx=5, pady=(5, 5))
+        self.airportSelectButtonPH = customtkinter.CTkButton(
+            self.airportSelectFrame, text="EGPH", command=lambda: self.switchAirport("EGPH"))
+        self.airportSelectButtonPH.grid(row=1, column=0, padx=5, pady=(5, 5))
+
+        self.airportSelectButtonSS = customtkinter.CTkButton(
+            self.airportSelectFrame, text="EGSS", command=lambda: self.switchAirport("EGSS"))
+        self.airportSelectButtonSS.grid(row=2, column=0, padx=5, pady=(5, 5))
+
+        self.airportSelectButtonCC = customtkinter.CTkButton(
+            self.airportSelectFrame, text="EGCC", command=lambda: self.switchAirport("EGCC"))
+        self.airportSelectButtonCC.grid(row=3, column=0, padx=5, pady=(5, 5))
 
     def getSectorFile(self) -> str:
         """Get the location of the sectorfile
@@ -286,8 +285,22 @@ class App(customtkinter.CTk):
         self.invalidFplnLabel.configure(
             text=f"Percentage of Flightplan Errors: {int(value)}%")
 
-    def switchAirport(self) -> None:
+    def switchAirport(self, airport: str) -> None:
         ...
+
+    def loadAirports(self) -> None:
+        # Import initial airport data
+        with open("rsc/airportConfig.json") as configData:
+            airportConfigs = json.load(configData)
+        initial = airportConfigs.get("EGPH")
+        self.currentAirport: Airport = Airport(initial.get("ICAO"), initial.get(
+            "elevation"), initial.get("runway"), initial.get("position"))
+
+        approaches = initial.get("approachData")
+        self.approachData = ""
+        for counter in range(len(initial.get("approachData"))):
+            self.approachData += approaches.get("app" +
+                                                str((counter + 1))) + "\n"
 
     def addManualPilot(self) -> None:
         """Open a new window to add a manual pilot
