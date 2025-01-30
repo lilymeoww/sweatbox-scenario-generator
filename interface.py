@@ -200,6 +200,8 @@ class App(customtkinter.CTk):
                 if len(config) >= 2:
                     self.sectorFileLocation = config[0]
                     self.outputDirectory = config[1]
+        if self.outputDirectory == "()":
+            self.outputDirectory = None
 
     def writeOptions(self) -> None:
         """Update the options file
