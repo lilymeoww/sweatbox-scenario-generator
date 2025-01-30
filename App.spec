@@ -11,7 +11,7 @@ a = Analysis(
         ('utils.py', '.'),
         ('interface.py', '.')
     ],
-    hiddenimports=['PIL._tkinter_finder'],
+    hiddenimports=['PIL._tkinter_finder',customtkinter,tkintermapviewq],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
