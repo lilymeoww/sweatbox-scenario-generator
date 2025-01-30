@@ -26,7 +26,6 @@ class App(customtkinter.CTk):
         self.invalidRoutePercentage = tk.IntVar()
         self.invalidLevelPercentage = tk.IntVar()
         self.fplanErrorsPercentage = tk.IntVar()
-        self.numberOfPlanes = tk.StringVar(value=20)
 
         self.sectorFileLocation = None
         self.outputDirectory = None
@@ -102,9 +101,9 @@ class App(customtkinter.CTk):
         customtkinter.CTkLabel(self.generateFrame, text="Number of Planes",
                                fg_color="transparent").grid(row=0, column=0, padx=20, pady=(10, 5))
 
-        self.entry = customtkinter.CTkEntry(
-            self.generateFrame, placeholder_text=self.numberOfPlanes.get())
-        self.entry.grid(row=1, column=0, padx=20, pady=(5, 10))
+        self.numberOfPlanesEntry = customtkinter.CTkEntry(
+            self.generateFrame, placeholder_text="20")
+        self.numberOfPlanesEntry.grid(row=1, column=0, padx=20, pady=(5, 10))
 
         self.manualAdd = customtkinter.CTkButton(
             self.generateFrame, text="Add Pilot Manually", command=self.addManualPilot)
@@ -237,9 +236,12 @@ class App(customtkinter.CTk):
         """Generate the sweatbox file, and destroy the window
         """
         controllers = self.getControllers()
-
+        if not self.numberOfPlanesEntry.get():
+            numberOfPlanes = 20
+        else:
+            numberOfPlanes = self.numberOfPlanesEntry.get()
         self.sweatboxContents = generateSweatboxText(self.currentAirport, self.approachData, int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
-                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(self.numberOfPlanes.get()), self.manualPilots)
+                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots)
         if not self.outputDirectory:
             self.outputDirectory = self.selectDirectory("Output")
         self.writeOptions()
