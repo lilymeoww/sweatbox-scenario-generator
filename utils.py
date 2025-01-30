@@ -1,7 +1,7 @@
-import os
 import string
 import random
 import json
+
 
 class Airport:
     """Represents an airport
@@ -33,7 +33,7 @@ class Controller:
     airport_icao : str
         ICAO code of the airport, e.g. EGPH
     facility : str
-        Position of the controller, e.g. TWR or APP
+        Position of the Mentor, e.g. GND for OBS -> S1
     name : str
         Log-on callsign of the controller e.g. EGPH_TWR
     frequency : str
@@ -117,7 +117,6 @@ class Pilot:
 class Stand:
 
     def __init__(self, number, lat, long, heading):
-      
         """Represents a Stand at an airport
         Attributes:
         -----------
@@ -132,7 +131,7 @@ class Stand:
         heading : str
             Heading of the stand between 0 and 359 degrees
         """
-    
+
     # TODO: Moved to dictionary object. Class no longer required.
 
     def __init__(self, airport: str, number: str, lat: str, long: str, heading: str):
@@ -198,7 +197,7 @@ class Scenario:
         return scenario_file_str
 
 
-def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[tuple[str, str]], autoPilots: int, manualPilots: list[Pilot]) -> str:
+def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot]) -> str:
     """Generates pilots and controllers, adds them to a scenario and generates the resulting text
 
     Args:
@@ -208,7 +207,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
         invalidRouteP (int): Percentage of aircraft with invalid routes
         invalidLevelP (int): Percentage of aircraft with invalid levels
         fplanErrorsP (int): Percentage of general flightplan errors
-        controllers (list[tuple[str, str]]): List of controllers in the form (callsign, frequency)
+        controllers (list[Controller]): List of controllers
         autoPilots (int): Number of pilots to generate automatically
         manualPilots (list[Pilot]): List of manual pilots to add
 
@@ -217,11 +216,8 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
     """
     scenario = Scenario(airport, app_data)
 
-    # add controllers
-    for controller, frequency in controllers:
-        facility = controller.split("_")[-1]
-        scenario.add_controller(Controller(
-            airport.icao, facility, controller, frequency))
+    for controller in controllers:
+        scenario.add_controller(controller)
 
     pilots = generate_random_plans(autoPilots, airport, vfrP,
                                    invalidRouteP, invalidLevelP, fplanErrorsP)
@@ -259,17 +255,17 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         stands = temp.get(dep.icao)
 
     with open("rsc/callsignsVFR.json") as jsonData:
-            temp = json.load(jsonData)
+        temp = json.load(jsonData)
     callsigns = temp.get("callsigns")
-    
+
     current_sq = 0
     for _ in range(numberOfVfr):
         current_sq += 1
-        #callsigns = callsigns - vfrCallsignsUsed
-        #stands = stands - standsUsed
+        # callsigns = callsigns - vfrCallsignsUsed
+        # stands = stands - standsUsed
         cs = random.choice(list(callsigns))
         callsigns.pop(cs, None)
-        #vfrCallsignsUsed.add(cs)
+        # vfrCallsignsUsed.add(cs)
         rules = "V"
         dest = random.choice(
             ["EGPF", "EGPB", "EGNX", "EGPC", "EGAA", "EGPH", "EGLK", "EGLF", "EGMA", "EGFF"])
@@ -278,7 +274,8 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         print(stand)
         selectedStand = stands.get(stand)
         stands.pop(stand)
-        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
+        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
+            ",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
         sq = sq = f"{current_sq:04}"
         crz = (500 * random.randint(1, 3)) + 1000
         rmk = "v"
@@ -287,7 +284,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
                       dep.icao, sq, rules, ac_type, crz, dest, rmk, rte, ""))
 
     with open("rsc/callsignsIFR.json") as jsonData:
-            temp = json.load(jsonData)
+        temp = json.load(jsonData)
     callsigns = temp.get("callsigns")
 
     with open("aircrafttypes.txt", "r")as f:
@@ -298,7 +295,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         sq = f"{current_sq:04}"
         depAirport = dep.icao
 
-        #stands = stands - standsUsed
+        # stands = stands - standsUsed
         chosenCallsign = random.choice(list(callsigns))
         cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
             string.ascii_uppercase) + random.choice(string.ascii_uppercase)
@@ -316,8 +313,9 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         stand = random.choice(list(stands))
         selectedStand = stands.get(stand)
         stands.pop(stand)
-        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
-        standsUsed.add(stand) # TODO: Remove.
+        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
+            ",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
+        standsUsed.add(stand)  # TODO: Remove.
         rmk = "v"
         rte, crz = get_route(dep.icao, dest, incorrect_factor)
         if random.randint(1, 100) <= level_factor:
@@ -388,6 +386,7 @@ def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str,
     except FileNotFoundError:
         print("Error: routes.txt file not found.")
     return f"{departure} {arrival}", "E"
+
 
 if __name__ == "__main__":
     ...

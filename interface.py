@@ -4,7 +4,7 @@ import customtkinter
 import os
 import re
 import json
-from utils import generateSweatboxText, Pilot, Airport
+from utils import generateSweatboxText, Pilot, Airport, Controller
 
 
 class App(customtkinter.CTk):
@@ -18,6 +18,10 @@ class App(customtkinter.CTk):
         # Themes: "blue" (standard), "green", "dark-blue"
         customtkinter.set_default_color_theme("green")
 
+        # configure window
+        self.title("Sweatbox Scenario Generator")
+        self.geometry(f"{1100}x{650}")
+
         self.vfrPercentage = tk.IntVar()
         self.invalidRoutePercentage = tk.IntVar()
         self.invalidLevelPercentage = tk.IntVar()
@@ -28,6 +32,7 @@ class App(customtkinter.CTk):
         self.outputDirectory = None
 
         self.manualPilots = []
+        self.activeControllers = {}
 
         # Import initial airport data
         with open("rsc/airportConfig.json") as configData:
@@ -44,10 +49,6 @@ class App(customtkinter.CTk):
                                                 str((counter + 1))) + "\n"
 
         self.loadOptions()
-
-        # configure window
-        self.title("Sweatbox Scenario Generator")
-        self.geometry(f"{1100}x{580}")
 
         self.grid_columnconfigure(0, weight=0, minsize=240)
         self.grid_columnconfigure(1, weight=2)
@@ -109,9 +110,13 @@ class App(customtkinter.CTk):
             self.generateFrame, text="Add Pilot Manually", command=self.addManualPilot)
         self.manualAdd.grid(row=2, column=0, padx=20, pady=10)
 
+        self.addATC = customtkinter.CTkButton(
+            self.generateFrame, text="Add Controllers", command=self.addControllers)
+        self.addATC.grid(row=3, column=0, padx=20, pady=10)
+
         self.generateButton = customtkinter.CTkButton(
             self.generateFrame, text="Generate Sweatbox file", command=self.generate)
-        self.generateButton.grid(row=3, column=0, padx=20, pady=10)
+        self.generateButton.grid(row=4, column=0, padx=20, pady=10)
 
     def placeSliders(self) -> None:
         """Place the sliders on the frame
@@ -216,26 +221,30 @@ class App(customtkinter.CTk):
         """
         return filedialog.askdirectory(title=f"Select {dir}")
 
+    def getControllers(self) -> list[Controller]:
+        with open("rsc/controllers.json")as f:
+            data = json.load(f)
+        controllers = []
+        for airport in self.activeControllers:
+            for pos in self.activeControllers[airport]:
+                freq = data[airport][pos]
+                controllers.append(Controller(
+                    airport, "GND", f"{airport}_{pos}", freq))
+
+        return controllers
+
     def generate(self) -> None:
         """Generate the sweatbox file, and destroy the window
         """
+        controllers = self.getControllers()
+
         self.sweatboxContents = generateSweatboxText(self.currentAirport, self.approachData, int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
-                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), [("EGPH_TWR", "118,705"), ("EGPH_APP", "121.205")], int(self.numberOfPlanes.get()), self.manualPilots)
-
-        if self.outputDirectory:
-            fileName = filedialog.asksaveasfilename(
-                defaultextension=".txt", filetypes=[("Text files", "*.txt")], initialdir=self.outputDirectory)
-        else:
-            fileName = filedialog.asksaveasfilename(
-                defaultextension=".txt", filetypes=[("Text files", "*.txt")])
-
-        if not self.outputDirectory or os.path.dirname(fileName) != self.outputDirectory:
-            self.outputDirectory = os.path.dirname(fileName)
-            self.writeOptions()
-
-        if not fileName:
-            return
-        with open(fileName, "w")as outFile:
+                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(self.numberOfPlanes.get()), self.manualPilots)
+        if not self.outputDirectory:
+            self.outputDirectory = self.selectDirectory("Output")
+        self.writeOptions()
+        # TODO : Update the naming - let the user choose the name?
+        with open(f"{self.outputDirectory}/sweatbox.txt", "w")as outFile:
             outFile.write(self.sweatboxContents)
 
         self.destroy()
@@ -358,6 +367,51 @@ class App(customtkinter.CTk):
         save_button = customtkinter.CTkButton(
             newWindow, text="Add pilot", command=save_pilot)
         save_button.grid(row=11, column=0, columnspan=2, pady=20)
+
+    def addControllers(self) -> None:
+        controllerWindow = customtkinter.CTkToplevel(self)
+        controllerWindow.title("Add Controllers")
+        controllerWindow.geometry("350x500")
+        controllerWindow.grid_columnconfigure(0, weight=1)
+
+        def saveControllers() -> None:
+            controllerWindow.destroy()
+
+        with open("rsc/controllers.json")as f:
+            controllers = json.load(f)
+
+        save_button = customtkinter.CTkButton(
+            controllerWindow, text="Add Selected Controllers", command=saveControllers)
+        save_button.grid(row=0, column=0, pady=20)
+
+        controllerVar = tk.StringVar(value="Select Controller")
+        controllerDropdown = customtkinter.CTkOptionMenu(
+            controllerWindow, variable=controllerVar, values=list(controllers.keys()), command=lambda _: updateControllerInfo())
+        controllerDropdown.grid(
+            row=1, column=0, pady=10, padx=10)
+
+        def saveCheckboxState(controller, pos, var):
+            self.activeControllers[controller][pos] = var.get()
+
+        def updateControllerInfo():
+            selected_controller = controllerVar.get()
+            if selected_controller in controllers:
+                for widget in controllerWindow.grid_slaves():
+                    if int(widget.grid_info()["row"]) > 1:
+                        widget.grid_forget()
+
+                info = controllers[selected_controller]
+                if selected_controller not in self.activeControllers:
+                    self.activeControllers[selected_controller] = {}
+                for pos, freq in info.items():
+                    var = tk.BooleanVar(
+                        value=self.activeControllers[selected_controller].get(pos, False))
+                    checkbox = customtkinter.CTkCheckBox(
+                        controllerWindow, text=f"{selected_controller}_{pos} ({freq})", variable=var)
+                    checkbox.grid(row=2 + list(info.keys()).index(pos),
+                                  column=0, pady=5, padx=10)
+                    var.trace_add("write", lambda *args, pos=pos,
+                                  var=var: saveCheckboxState(selected_controller, pos, var))
 
 
 if __name__ == "__main__":
