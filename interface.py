@@ -3,6 +3,7 @@ from tkinter import filedialog
 import customtkinter
 import os
 import re
+import json
 from utils import generateSweatboxText, Pilot, Airport
 
 
@@ -25,8 +26,17 @@ class App(customtkinter.CTk):
         self.outputDirectory = None
 
         self.manualPilots = []
-        self.currentAirport: Airport = Airport(
-            "EGPH", 136, "24", "GND")  # TODO: obviously
+
+        # Import initial airport data
+        with open("airportConfig.json") as configData:
+            airportConfig = json.load(configData)
+        initial = airportConfig.get("EGPH") # TODO: Un-hard code the ICAO. (Not a clue how though)
+        self.currentAirport: Airport = Airport(initial.get("ICAO"), initial.get("elevation"), initial.get("runway"), initial.get("position"))
+
+        approaches = initial.get("approachData")
+        self.approachData = ""
+        for counter in range(len(initial.get("approachData"))):
+            self.approachData += approaches.get("app"+ str((counter + 1))) + "\n"
 
         self.loadOptions()
 
@@ -169,7 +179,7 @@ class App(customtkinter.CTk):
         return filedialog.askdirectory(title=f"Select {dir}")
 
     def generate(self) -> None:
-        self.sweatboxContents = generateSweatboxText(self.currentAirport, "AIRPORT DATA", int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
+        self.sweatboxContents = generateSweatboxText(self.currentAirport, self.approachData, int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), [("EGPH_TWR", "118,705"), ("EGPH_APP", "121.205")], int(self.numberOfPlanes.get()), self.manualPilots)
         if not self.outputDirectory:
             self.outputDirectory = self.selectDirectory("Output")

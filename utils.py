@@ -89,10 +89,6 @@ class Scenario:
 
 
 def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[tuple[str, str]], autoPilots: int, manualPilots: list[Pilot]) -> str:
-    app_data = """ILS24:55.9560884:-3.3546135:55.9438540:-3.3907010
-    ILS06:55.9437922:-3.3908724:55.9561296:-3.3544421
-    ILS:55.9513586:-3.3594437:118.0
-    ILS:55.9436373:-3.3341400:298.0"""  # TODO get this from somewhere nice?? also what is this data :o
     scenario = Scenario(airport, app_data)
 
     for controller, frequency in controllers:
