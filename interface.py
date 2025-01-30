@@ -29,8 +29,8 @@ class App(customtkinter.CTk):
 
         # Import initial airport data
         with open("airportConfig.json") as configData:
-            airportConfig = json.load(configData)
-        initial = airportConfig.get("EGPH") # TODO: Un-hard code the ICAO. (Not a clue how though)
+            airportConfigs = json.load(configData)
+        initial = airportConfigs.get("EGPH") # TODO: Un-hard code the ICAO. (Not a clue how though)
         self.currentAirport: Airport = Airport(initial.get("ICAO"), initial.get("elevation"), initial.get("runway"), initial.get("position"))
 
         approaches = initial.get("approachData")
