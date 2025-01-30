@@ -35,6 +35,7 @@
   },
   "EGKK": {
     "ICAO": "EGKK",
+    "runway": "26L",
     "position": "GND"
   }
 }
