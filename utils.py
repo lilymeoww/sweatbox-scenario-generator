@@ -271,7 +271,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             ["EGPF", "EGPB", "EGNX", "EGPC", "EGAA", "EGPH", "EGLK", "EGLF", "EGMA", "EGFF"])
         ac_type = random.choice(["P28A", "C172", "C152", "DA42", "SR22"])
         stand = random.choice(list(stands))
-        print(stand)
+        print(f"SYSTEM: VFR {cs} ASSIGNED TO STAND {stand}")
         selectedStand = stands.get(stand)
         stands.pop(stand)
         lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
@@ -308,11 +308,12 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         acType = random.choice(possTypes)
 
         stand = random.choice(list(stands))
+        print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
         selectedStand = stands.get(stand)
         stands.pop(stand)
+        standsUsed.add(stand)  # TODO: Remove once json'd
         lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
             ",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
-        standsUsed.add(stand)  # TODO: Remove.
         rmk = "v"
         rte, crz = get_route(dep.icao, dest, incorrect_factor)
         if random.randint(1, 100) <= level_factor:
