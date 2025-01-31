@@ -4,7 +4,9 @@ import customtkinter
 import os
 import re
 import json
-from utils import generateSweatboxText, Pilot, Airport, Controller
+from utils import resourcePath, generateSweatboxText, Pilot, Airport, Controller
+import tkintermapview
+from PIL import Image, ImageTk
 
 
 class App(customtkinter.CTk):
@@ -16,7 +18,7 @@ class App(customtkinter.CTk):
         # Modes: "System" (standard), "Dark", "Light"
         customtkinter.set_appearance_mode("Dark")
         # Themes: "blue" (standard), "green", "dark-blue"
-        customtkinter.set_default_color_theme("green")
+        customtkinter.set_default_color_theme(resourcePath("theme.json"))
 
         # configure window
         self.title("Sweatbox Scenario Generator")
@@ -26,7 +28,6 @@ class App(customtkinter.CTk):
         self.invalidRoutePercentage = tk.IntVar()
         self.invalidLevelPercentage = tk.IntVar()
         self.fplanErrorsPercentage = tk.IntVar()
-        self.numberOfPlanes = tk.StringVar(value=20)
 
         self.sectorFileLocation = None
         self.outputDirectory = None
@@ -35,7 +36,7 @@ class App(customtkinter.CTk):
         self.activeControllers = {}
 
         # Import initial airport data
-        with open("rsc/airportConfig.json") as configData:
+        with open(resourcePath("rsc/airportConfig.json")) as configData:
             airportConfigs = json.load(configData)
         # TODO: Un-hard code the ICAO. (Not a clue how though)
         initial = airportConfigs.get("EGPH")
@@ -73,6 +74,23 @@ class App(customtkinter.CTk):
             self, corner_radius=12)
         self.mapFrame.grid(row=0, column=1, rowspan=4,
                            columnspan=1, sticky="nsew", padx=5, pady=5)
+        self.mapFrame.grid_rowconfigure(0, weight=1)
+        self.mapFrame.grid_columnconfigure(0, weight=1)
+
+        self.mapWidget = tkintermapview.TkinterMapView(
+            self.mapFrame, corner_radius=12)
+        self.mapWidget.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        # TODO make Dynamic
+        self.mapWidget.set_position(55.9505, -3.3612)
+        self.mapWidget.set_zoom(15)
+        image = Image.open(resourcePath("icons8-plane-50.png"))
+        # Resize the image to 25x25 pixels
+        resized_image = image.resize((25, 25))
+        rotated_image = resized_image.rotate(
+            45)  # Rotate the image by 45 degrees
+        photo = ImageTk.PhotoImage(rotated_image)
+        self.mapWidget.set_marker(
+            55.9505, -3.3612, icon=photo)
 
         self.summaryFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
@@ -102,9 +120,9 @@ class App(customtkinter.CTk):
         customtkinter.CTkLabel(self.generateFrame, text="Number of Planes",
                                fg_color="transparent").grid(row=0, column=0, padx=20, pady=(10, 5))
 
-        self.entry = customtkinter.CTkEntry(
-            self.generateFrame, placeholder_text=self.numberOfPlanes.get())
-        self.entry.grid(row=1, column=0, padx=20, pady=(5, 10))
+        self.numberOfPlanesEntry = customtkinter.CTkEntry(
+            self.generateFrame, placeholder_text="20")
+        self.numberOfPlanesEntry.grid(row=1, column=0, padx=20, pady=(5, 10))
 
         self.manualAdd = customtkinter.CTkButton(
             self.generateFrame, text="Add Pilot Manually", command=self.addManualPilot)
@@ -152,7 +170,7 @@ class App(customtkinter.CTk):
 
         # fPln errors
         self.invalidFplnLabel = customtkinter.CTkLabel(
-            self.sliderFrame, text=f"Percentage of Invalid Levels: 0%", fg_color="transparent", justify="left")
+            self.sliderFrame, text=f"Percentage of Flightplan errors: 0%", fg_color="transparent", justify="left")
         self.invalidFplnLabel.grid(row=6, column=0, padx=0, pady=5)
 
         invalidFplnSlider = customtkinter.CTkSlider(
@@ -222,7 +240,7 @@ class App(customtkinter.CTk):
         return filedialog.askdirectory(title=f"Select {dir}")
 
     def getControllers(self) -> list[Controller]:
-        with open("rsc/controllers.json")as f:
+        with open(resourcePath("rsc/controllers.json"))as f:
             data = json.load(f)
         controllers = []
         for airport in self.activeControllers:
@@ -237,16 +255,42 @@ class App(customtkinter.CTk):
         """Generate the sweatbox file, and destroy the window
         """
         controllers = self.getControllers()
+        if not self.numberOfPlanesEntry.get():
+            numberOfPlanes = 20
+        else:
+            numberOfPlanes = self.numberOfPlanesEntry.get()
+
+        print(f"SYSTEM: GENERATING SWEATBOX FILE")
+        print(f"SYSTEM: {numberOfPlanes=}")
+        print(f"SYSTEM: {self.vfrPercentage.get()=}%")
+        print(f"SYSTEM: {self.invalidRoutePercentage.get()=}%")
+        print(f"SYSTEM: {self.invalidLevelPercentage.get()=}%")
+        print(f"SYSTEM: {self.fplanErrorsPercentage.get()=}%")
 
         self.sweatboxContents = generateSweatboxText(self.currentAirport, self.approachData, int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
-                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(self.numberOfPlanes.get()), self.manualPilots)
-        if not self.outputDirectory:
-            self.outputDirectory = self.selectDirectory("Output")
-        self.writeOptions()
-        # TODO : Update the naming - let the user choose the name?
-        with open(f"{self.outputDirectory}/sweatbox.txt", "w")as outFile:
+                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots)
+
+        print(f"SYSTEM: GENERATED SWEATBOX FILE")
+
+        if self.outputDirectory:
+            fileName = filedialog.asksaveasfilename(
+                defaultextension=".txt", filetypes=[("Text files", "*.txt")], initialdir=self.outputDirectory)
+        else:
+            fileName = filedialog.asksaveasfilename(
+                defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+
+        if not self.outputDirectory or os.path.dirname(fileName) != self.outputDirectory:
+            self.outputDirectory = os.path.dirname(fileName)
+            self.writeOptions()
+
+        if not fileName:
+            print("ERROR: COULD NOT OUTPUT FILE")
+            return
+        with open(fileName, "w")as outFile:
             outFile.write(self.sweatboxContents)
 
+        print(f"SYSTEM: FILE WRITTEN TO {fileName}")
+        print(f"SYSTEM: BYE")
         self.destroy()
 
     def updateVFRLabel(self, value) -> None:
@@ -377,7 +421,7 @@ class App(customtkinter.CTk):
         def saveControllers() -> None:
             controllerWindow.destroy()
 
-        with open("rsc/controllers.json")as f:
+        with open(resourcePath("rsc/controllers.json"))as f:
             controllers = json.load(f)
 
         save_button = customtkinter.CTkButton(

@@ -1,6 +1,18 @@
 import string
 import random
 import json
+import sys
+import os
+
+
+def resourcePath(relativePath: str) -> str:
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        basePath = sys._MEIPASS
+    except Exception as e:
+        basePath = os.environ.get("_MEIPASS2", os.path.abspath("."))
+
+    return os.path.join(basePath, relativePath)
 
 
 class Airport:
@@ -250,11 +262,11 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     vfrCallsignsUsed = set()
     pilots = []
 
-    with open("rsc/stands.json") as jsonData:
+    with open(resourcePath("rsc/stands.json")) as jsonData:
         JSONInjest = json.load(jsonData)
         stands = JSONInjest.get(dep.icao)
 
-    with open("rsc/callsignsVFR.json") as jsonData:
+    with open(resourcePath("rsc/callsignsVFR.json")) as jsonData:
         JSONInjest = json.load(jsonData)
     callsigns = JSONInjest.get("callsigns")
 
@@ -271,7 +283,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             ["EGPF", "EGPB", "EGNX", "EGPC", "EGAA", "EGPH", "EGLK", "EGLF", "EGMA", "EGFF"])
         ac_type = random.choice(["P28A", "C172", "C152", "DA42", "SR22"])
         stand = random.choice(list(stands))
-        print(stand)
+        print(f"SYSTEM: VFR {cs} ASSIGNED TO STAND {stand}")
         selectedStand = stands.get(stand)
         stands.pop(stand)
         lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
@@ -283,11 +295,11 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
                       dep.icao, sq, rules, ac_type, crz, dest, rmk, rte, ""))
 
-    with open("rsc/callsignsIFR.json") as jsonData:
+    with open(resourcePath("rsc/callsignsIFR.json")) as jsonData:
         JSONInjest = json.load(jsonData)
     callsigns = JSONInjest.get("callsigns")
 
-    with open("rsc/aircraftTypes.json") as jsonData:
+    with open(resourcePath("rsc/aircraftTypes.json")) as jsonData:
         JSONInjest = json.load(jsonData)
     types = JSONInjest.get("callsigns")
 
@@ -308,15 +320,17 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         acType = random.choice(possTypes)
 
         stand = random.choice(list(stands))
+        print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
         selectedStand = stands.get(stand)
         stands.pop(stand)
+        standsUsed.add(stand)  # TODO: Remove once json'd
         lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
             ",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
-        standsUsed.add(stand)  # TODO: Remove.
         rmk = "v"
         rte, crz = get_route(dep.icao, dest, incorrect_factor)
         if random.randint(1, 100) <= level_factor:
-            with open("rsc/invalidAltitudes.json") as jsonData:
+
+            with open(resourcePath("rsc/invalidAltitudes.json")) as jsonData:
                 JSONInjest = json.load(jsonData)
             alts = JSONInjest.get(dep.icao)
             crz = alts.get(dest)
@@ -325,12 +339,13 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             entry_error_options = ["type", "dep"]
             chosen_error = random.choice(entry_error_options)
             if chosen_error == "type":
-                with open("rsc/errorTypes.json") as jsonData:
+
+                with open(resourcePath("rsc/errorTypes.json")) as jsonData:
                     JSONInjest = json.load(jsonData)
                 possTypes = JSONInjest.get("types")
                 acType = possTypes.get(acType)
-            elif chosen_error == "dep":
-                with open("rsc/adepError.json") as jsonData:
+            elif chosen_error == "dep":)
+                with open(resourcePath("rsc/adepError.json") as jsonData:
                     JSONInjest = json.load(jsonData)
                 possAirports = JSONInjest.get(depAirport)
                 depAirport = random.choice(possAirports).split(",")
@@ -355,14 +370,14 @@ def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str,
     try:
 
         if random.randint(1, 100) <= incorrect_factor:
-            with open("rsc/invalidRoutes.json") as jsonData:
+            with open(resourcePath("rsc/invalidRoutes.json")) as jsonData:
                 JSONInjest = json.load(jsonData)
             routes = JSONInjest.get(departure)
             extracted = routes.get(arrival)
             route = random.choice(extracted).split(",")
 
         else:
-            with open("rsc/routes.json") as jsonData:
+            with open(resourcePath("rsc/routes.json")) as jsonData:
                 JSONInjest = json.load(jsonData)
             routes = JSONInjest.get(departure)
             extracted = routes.get(arrival)
