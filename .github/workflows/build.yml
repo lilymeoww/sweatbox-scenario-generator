@@ -9,7 +9,7 @@ on:
    workflow_dispatch:
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     
     steps:
@@ -20,8 +20,37 @@ jobs:
         with:
           python-version: '3.13'
       
-      - name: create venv
-        run: python3 -m venv venv && source venv/bin/activate
+      - name: install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: debug
+        run: |
+          pwd
+          ls -la
+          pip list
+
+      - name: build
+        run: python3 -m PyInstaller App.spec
+        
+      - name: Upload build as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          include-hidden-files: true
+          name: Sweatbox-Scenario-Generator-Linux
+          path: dist
+
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
       
       - name: install dependencies
         run: |
@@ -29,14 +58,11 @@ jobs:
           pip install pyinstaller
 
       - name: build
-        run: pyinstaller --noconfirm --onefile --windowed --add-data "rsc:rsc/"  "App.py" --name "SweatboxScenarioGenerator"
+        run: python -m PyInstaller App.spec
         
       - name: Upload build as Artifact
         uses: actions/upload-artifact@v4
         with:
           include-hidden-files: true
-          name: Sweatbox-Scenario-Generator
+          name: Sweatbox-Scenario-Generator-Windows
           path: dist
-      
-
-    
