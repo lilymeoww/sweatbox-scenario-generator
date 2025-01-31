@@ -20,13 +20,15 @@ jobs:
         with:
           python-version: '3.13'
       
-      - name: create venv
-        run: python3 -m venv venv && source venv/bin/activate
-      
       - name: install dependencies
         run: |
           pip install -r requirements.txt
           pip install pyinstaller
+
+      - name: debug
+        run: |
+          pwd
+          pip list
 
       - name: build
         run: pyinstaller App.spec
@@ -48,9 +50,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.13'
-      
-      - name: create venv
-        run: python -m venv venv && venv\Scripts\activate
       
       - name: install dependencies
         run: |
