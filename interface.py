@@ -478,9 +478,8 @@ class App(customtkinter.CTk):
             standData = json.load(f)
         lat, long, heading = standData[airportICAO][standNumber].split(",")
         image = Image.open(resourcePath("icons8-plane-50.png"))
-        # Resize the image to 25x25 pixels
         # TODO: make dynamic scaling
-        resized_image = image.resize((25, 25))
+        resized_image = image.resize((20, 20))
         rotated_image = resized_image.rotate(
             90 - int(heading))  # Rotate to the north, then thank Tkinter
         planeIcon = ImageTk.PhotoImage(rotated_image)
