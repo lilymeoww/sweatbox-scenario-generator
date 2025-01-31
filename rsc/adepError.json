@@ -1,3 +1,15 @@
 {
-  "EGPH": ["EGHP", "EGPF", "EDI", "EDN"]
+  "EGPH": [
+    "EGHP",
+    "EGPF",
+    "EDI",
+    "EDN"
+  ],
+  "EGSS": [
+    "EGGS",
+    "STN"
+  ],
+  "EGCC": [
+    "MAN"
+  ]
 }

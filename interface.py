@@ -18,7 +18,7 @@ class App(customtkinter.CTk):
         # Modes: "System" (standard), "Dark", "Light"
         customtkinter.set_appearance_mode("Dark")
         # Themes: "blue" (standard), "green", "dark-blue"
-        customtkinter.set_default_color_theme(resourcePath("theme.json"))
+        customtkinter.set_default_color_theme("green")
 
         # configure window
         self.title("Sweatbox Scenario Generator")
@@ -35,19 +35,9 @@ class App(customtkinter.CTk):
         self.manualPilots = []
         self.activeControllers = {}
 
-        # Import initial airport data
-        with open(resourcePath("rsc/airportConfig.json")) as configData:
-            airportConfigs = json.load(configData)
-        # TODO: Un-hard code the ICAO. (Not a clue how though)
-        initial = airportConfigs.get("EGPH")
-        self.currentAirport: Airport = Airport(initial.get("ICAO"), initial.get(
-            "elevation"), initial.get("runway"), initial.get("position"))
-
-        approaches = initial.get("approachData")
-        self.approachData = ""
-        for counter in range(len(initial.get("approachData"))):
-            self.approachData += approaches.get("app" +
-                                                str((counter + 1))) + "\n"
+        self.selectableAirports = {}
+        self.loadAirports()
+        self.activeAirport = None
 
         self.loadOptions()
 
@@ -80,6 +70,7 @@ class App(customtkinter.CTk):
         self.mapWidget = tkintermapview.TkinterMapView(
             self.mapFrame, corner_radius=12)
         self.mapWidget.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+
         # TODO make Dynamic
         self.mapWidget.set_position(55.9505, -3.3612)
         self.mapWidget.set_zoom(15)
@@ -91,6 +82,8 @@ class App(customtkinter.CTk):
         photo = ImageTk.PhotoImage(rotated_image)
         self.mapWidget.set_marker(
             55.9505, -3.3612, icon=photo)
+
+        self.switchAirport(self.selectableAirports["EGPH"]["airport"])
 
         self.summaryFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
@@ -181,9 +174,10 @@ class App(customtkinter.CTk):
     def placeAirportSelect(self) -> None:
         """Place airport select buttons
         """
-        self.airportSelectButton = customtkinter.CTkButton(
-            self.airportSelectFrame, text="EGPH", command=self.switchAirport)
-        self.airportSelectButton.grid(row=1, column=0, padx=5, pady=(5, 5))
+        airportVar = tk.StringVar(value="Select Airport")
+        airportDropdown = customtkinter.CTkOptionMenu(
+            self.airportSelectFrame, variable=airportVar, values=list(self.selectableAirports.keys()), command=lambda _: self.switchAirport(self.selectableAirports[airportVar.get()]["airport"]))
+        airportDropdown.grid(row=1, column=0, padx=20, pady=10)
 
     def getSectorFile(self) -> str:
         """Get the location of the sectorfile
@@ -267,7 +261,7 @@ class App(customtkinter.CTk):
         print(f"SYSTEM: {self.invalidLevelPercentage.get()=}%")
         print(f"SYSTEM: {self.fplanErrorsPercentage.get()=}%")
 
-        self.sweatboxContents = generateSweatboxText(self.currentAirport, self.approachData, int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
+        self.sweatboxContents = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots)
 
         print(f"SYSTEM: GENERATED SWEATBOX FILE")
@@ -309,8 +303,35 @@ class App(customtkinter.CTk):
         self.invalidFplnLabel.configure(
             text=f"Percentage of Flightplan Errors: {int(value)}%")
 
-    def switchAirport(self) -> None:
-        ...
+    def switchAirport(self, airport: Airport) -> None:
+        """Switch the active airport and center the map
+
+        Args:
+            airport (Airport): New airport
+        """
+        self.activeAirport = airport
+        print(f"SYSTEM: ACTIVE AIRPORT {airport.icao}")
+        # self.mapWidget.set_address("colosseo, rome, italy") TODO - Center map
+
+    def loadAirports(self) -> None:
+        """Load airport data from file
+        """
+        # Import initial airport data
+        with open(resourcePath("rsc/airportConfig.json")) as configData:
+            airportConfigs = json.load(configData)
+
+        for airport in airportConfigs:
+            elevation = airportConfigs[airport]["elevation"]
+            runway = airportConfigs[airport]["runway"]
+            position = airportConfigs[airport]["position"]
+            appData = airportConfigs[airport]["approachData"]
+            appDataStr = "\n".join(
+                [f"{value}" for _, value in appData.items()])
+
+            self.selectableAirports[airport] = {}
+            self.selectableAirports[airport]["airport"] = Airport(
+                airport, elevation, runway, position)
+            self.selectableAirports[airport]["approachData"] = appDataStr
 
     def addManualPilot(self) -> None:
         """Open a new window to add a manual pilot
