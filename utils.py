@@ -251,7 +251,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         vfr_factor (int): Percentage of VFR aircraft
         incorrect_factor (int): Percentage of incorrect routes
         level_factor (int): Percentage of incorrect levels
-        entry_error_factor (int): Percentage of general flightplan errors 
+        entry_error_factor (int): Percentage of general flightplan errors
 
     Returns:
         list[Pilot]: Returns a list of pilots with the required settings
@@ -286,8 +286,15 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         print(f"SYSTEM: VFR {cs} ASSIGNED TO STAND {stand}")
         selectedStand = stands.get(stand)
         stands.pop(stand)
-        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
-            ",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
+
+        lat, long, hdg, block = selectedStand[0], selectedStand[1], int(
+            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
+        for standToRemove in block:
+            if standToRemove in stands:
+                stands.pop(standToRemove)
+
+            print(f"SYSTEM: STAND {standToRemove} REMOVED")
+
         sq = sq = f"{current_sq:04}"
         crz = (500 * random.randint(1, 3)) + 1000
         rmk = "v"
@@ -321,11 +328,16 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
 
         stand = random.choice(list(stands))
         print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
+
         selectedStand = stands.get(stand)
         stands.pop(stand)
-        standsUsed.add(stand)  # TODO: Remove once json'd
-        lat, long, hdg = selectedStand.split(",")[0], selectedStand.split(
-            ",")[1], int(((int(selectedStand.split(",")[2]) * 2.88) + 0.5)) << 2
+        for standToRemove in selectedStand[3]:
+            if standToRemove in stands:
+                stands.pop(standToRemove)
+            print(f"SYSTEM: STAND {standToRemove} REMOVED")
+
+        lat, long, hdg = selectedStand[0], selectedStand[1], int(
+            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
         rmk = "v"
         rte, crz = get_route(dep.icao, dest, incorrect_factor)
         if random.randint(1, 100) <= level_factor:
