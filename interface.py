@@ -281,10 +281,17 @@ class App(customtkinter.CTk):
             text=f"Percentage of Flightplan Errors: {int(value)}%")
 
     def switchAirport(self, airport: Airport) -> None:
+        """Switch the active airport
+
+        Args:
+            airport (Airport): New airport
+        """
         self.activeAirport = airport
         print(f"SYSTEM: ACTIVE AIRPORT {airport.icao}")
 
     def loadAirports(self) -> None:
+        """Load airport data from file
+        """
         # Import initial airport data
         with open("rsc/airportConfig.json") as configData:
             airportConfigs = json.load(configData)
