@@ -474,6 +474,13 @@ class App(customtkinter.CTk):
                                   var=var: saveCheckboxState(selected_controller, pos, var))
 
     def placeAircraftIcon(self, airportICAO: str, standNumber: str) -> None:
+        """Place an aircraft Icon on a stand
+
+        Args:
+            airportICAO (str): ICAO of airport
+            standNumber (str): Stand identifier e.g. 1 or 45C
+        """
+
         with open(resourcePath("rsc/stands.json"))as f:
             standData = json.load(f)
         lat, long, heading = standData[airportICAO][standNumber].split(",")
