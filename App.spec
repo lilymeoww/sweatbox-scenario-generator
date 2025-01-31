@@ -5,11 +5,12 @@ a = Analysis(
     ['App.py'],
     pathex=[],
     binaries=[],
-        datas=[
+    datas=[
         ('rsc', 'rsc'),
         ('theme.json', '.'),
         ('utils.py', '.'),
-        ('interface.py', '.')
+        ('interface.py', '.'),
+        ('icons8-plane-50.png', '.')
     ],
     hiddenimports=['PIL._tkinter_finder','customtkinter','tkintermapview'],
     hookspath=[],

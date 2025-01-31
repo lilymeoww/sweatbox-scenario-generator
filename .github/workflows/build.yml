@@ -28,10 +28,11 @@ jobs:
       - name: debug
         run: |
           pwd
+          ls -la
           pip list
 
       - name: build
-        run: pyinstaller App.spec
+        run: python3 -m PyInstaller App.spec
         
       - name: Upload build as Artifact
         uses: actions/upload-artifact@v4
@@ -57,7 +58,7 @@ jobs:
           pip install pyinstaller
 
       - name: build
-        run: pyinstaller App.spec
+        run: python -m PyInstaller App.spec
         
       - name: Upload build as Artifact
         uses: actions/upload-artifact@v4
