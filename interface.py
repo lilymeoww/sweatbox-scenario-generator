@@ -38,7 +38,7 @@ class App(customtkinter.CTk):
         self.selectableAirports = {}
         self.loadAirports()
         self.activeAirport = None
-        self.switchAirport("EGPH")
+        self.switchAirport(self.selectableAirports["EGPH"]["airport"])
 
         self.loadOptions()
 
@@ -71,6 +71,7 @@ class App(customtkinter.CTk):
         self.mapWidget = tkintermapview.TkinterMapView(
             self.mapFrame, corner_radius=12)
         self.mapWidget.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+
         # TODO make Dynamic
         self.mapWidget.set_position(55.9505, -3.3612)
         self.mapWidget.set_zoom(15)
@@ -172,17 +173,10 @@ class App(customtkinter.CTk):
     def placeAirportSelect(self) -> None:
         """Place airport select buttons
         """
-        self.airportSelectButtonPH = customtkinter.CTkButton(
-            self.airportSelectFrame, text="EGPH", command=lambda: self.switchAirport("EGPH"))
-        self.airportSelectButtonPH.grid(row=1, column=0, padx=5, pady=(5, 5))
-
-        self.airportSelectButtonSS = customtkinter.CTkButton(
-            self.airportSelectFrame, text="EGSS", command=lambda: self.switchAirport("EGSS"))
-        self.airportSelectButtonSS.grid(row=2, column=0, padx=5, pady=(5, 5))
-
-        self.airportSelectButtonCC = customtkinter.CTkButton(
-            self.airportSelectFrame, text="EGCC", command=lambda: self.switchAirport("EGCC"))
-        self.airportSelectButtonCC.grid(row=3, column=0, padx=5, pady=(5, 5))
+        airportVar = tk.StringVar(value="Select Airport")
+        airportDropdown = customtkinter.CTkOptionMenu(
+            self.airportSelectFrame, variable=airportVar, values=list(self.selectableAirports.keys()), command=lambda _: self.switchAirport(self.selectableAirports[airportVar.get()]["airport"]))
+        airportDropdown.grid(row=1, column=0, padx=20, pady=10)
 
     def getSectorFile(self) -> str:
         """Get the location of the sectorfile
@@ -258,7 +252,8 @@ class App(customtkinter.CTk):
             numberOfPlanes = 20
         else:
             numberOfPlanes = self.numberOfPlanesEntry.get()
-        self.sweatboxContents = generateSweatboxText(self.currentAirport, self.approachData, int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
+
+        self.sweatboxContents = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots)
         if not self.outputDirectory:
             self.outputDirectory = self.selectDirectory("Output")
@@ -285,22 +280,27 @@ class App(customtkinter.CTk):
         self.invalidFplnLabel.configure(
             text=f"Percentage of Flightplan Errors: {int(value)}%")
 
-    def switchAirport(self, airport: str) -> None:
-        ...
+    def switchAirport(self, airport: Airport) -> None:
+        self.activeAirport = airport
+        print(f"SYSTEM: ACTIVE AIRPORT {airport.icao}")
 
     def loadAirports(self) -> None:
         # Import initial airport data
         with open("rsc/airportConfig.json") as configData:
             airportConfigs = json.load(configData)
-        initial = airportConfigs.get("EGPH")
-        self.currentAirport: Airport = Airport(initial.get("ICAO"), initial.get(
-            "elevation"), initial.get("runway"), initial.get("position"))
 
-        approaches = initial.get("approachData")
-        self.approachData = ""
-        for counter in range(len(initial.get("approachData"))):
-            self.approachData += approaches.get("app" +
-                                                str((counter + 1))) + "\n"
+        for airport in airportConfigs:
+            elevation = airportConfigs[airport]["elevation"]
+            runway = airportConfigs[airport]["runway"]
+            position = airportConfigs[airport]["position"]
+            appData = airportConfigs[airport]["approachData"]
+            appDataStr = "\n".join(
+                [f"{value}" for _, value in appData.items()])
+
+            self.selectableAirports[airport] = {}
+            self.selectableAirports[airport]["airport"] = Airport(
+                airport, elevation, runway, position)
+            self.selectableAirports[airport]["approachData"] = appDataStr
 
     def addManualPilot(self) -> None:
         """Open a new window to add a manual pilot
