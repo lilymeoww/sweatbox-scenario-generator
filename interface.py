@@ -74,15 +74,10 @@ class App(customtkinter.CTk):
         # TODO make Dynamic
         self.mapWidget.set_position(55.9505, -3.3612)
         self.mapWidget.set_zoom(15)
-        image = Image.open(resourcePath("icons8-plane-50.png"))
-        # Resize the image to 25x25 pixels
-        resized_image = image.resize((25, 25))
-        rotated_image = resized_image.rotate(
-            45)  # Rotate the image by 45 degrees
-        photo = ImageTk.PhotoImage(rotated_image)
-        self.mapWidget.set_marker(
-            55.9505, -3.3612, icon=photo)
 
+        self.planeIconList = []
+
+        # TODO: Move back to a relevant place?
         self.switchAirport(self.selectableAirports["EGPH"]["airport"])
 
         self.summaryFrame = customtkinter.CTkFrame(
@@ -477,6 +472,21 @@ class App(customtkinter.CTk):
                                   column=0, pady=5, padx=10)
                     var.trace_add("write", lambda *args, pos=pos,
                                   var=var: saveCheckboxState(selected_controller, pos, var))
+
+    def placeAircraftIcon(self, airportICAO: str, standNumber: str) -> None:
+        with open(resourcePath("rsc/stands.json"))as f:
+            standData = json.load(f)
+        lat, long, heading = standData[airportICAO][standNumber].split(",")
+        image = Image.open(resourcePath("icons8-plane-50.png"))
+        # Resize the image to 25x25 pixels
+        # TODO: make dynamic scaling
+        resized_image = image.resize((25, 25))
+        rotated_image = resized_image.rotate(
+            90 - int(heading))  # Rotate to the north, then thank Tkinter
+        planeIcon = ImageTk.PhotoImage(rotated_image)
+        self.planeIconList.append(planeIcon)
+        self.mapWidget.set_marker(
+            float(lat), float(long), icon=planeIcon)
 
 
 if __name__ == "__main__":
