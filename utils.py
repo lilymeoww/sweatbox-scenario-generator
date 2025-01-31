@@ -329,30 +329,26 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         rmk = "v"
         rte, crz = get_route(dep.icao, dest, incorrect_factor)
         if random.randint(1, 100) <= level_factor:
-            with open(resourcePath("invalidAltitudes.txt"), "r") as file:
-                invalidAlts = file.readlines()
-                found = False
-                for alt in invalidAlts:
-                    if not found and alt.split(",")[0] == dep and alt.split(",")[1] == dest:
-                        crz = alt.split(",")[2].strip()
-                        found = True
+
+            with open(resourcePath("rsc/invalidAltitudes.json")) as jsonData:
+                JSONInjest = json.load(jsonData)
+            alts = JSONInjest.get(dep.icao)
+            crz = alts.get(dest)
 
         if random.randint(1, 100) <= entry_error_factor:
             entry_error_options = ["type", "dep"]
             chosen_error = random.choice(entry_error_options)
             if chosen_error == "type":
-                with open(resourcePath("errorTypes.txt"), "r") as file:
-                    bad_types = file.readlines()
-                    new_type = ac_type  # Initialize new_type with the original ac_type
-                    for bad_type in bad_types:
-                        if bad_type.split(",")[0] == ac_type:
-                            new_type = bad_type.split(",")[1].strip()
-                            break  # Exit the loop once a match is found
-                ac_type = new_type
+
+                with open(resourcePath("rsc/errorTypes.json")) as jsonData:
+                    JSONInjest = json.load(jsonData)
+                possTypes = JSONInjest.get("types")
+                acType = possTypes.get(acType)
             elif chosen_error == "dep":
-                with open(resourcePath("adepError.txt"), "r") as f:
-                    lines = f.readlines()
-                    depAirport = random.choice(lines).strip()
+                with open(resourcePath("rsc/adepError.json")) as jsonData:
+                    JSONInjest = json.load(jsonData)
+                possAirports = JSONInjest.get(depAirport)
+                depAirport = random.choice(possAirports).split(",")
 
         pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
                             depAirport, sq, rules, acType, crz, dest, rmk, rte, ""))
@@ -395,6 +391,4 @@ def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str,
 
 
 if __name__ == "__main__":
-    with open(resourcePath("rsc/adepError.json"))as f:
-        data = json.load(f)
-    print(data)
+    ...
