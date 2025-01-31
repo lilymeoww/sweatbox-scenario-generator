@@ -483,7 +483,7 @@ class App(customtkinter.CTk):
 
         with open(resourcePath("rsc/stands.json"))as f:
             standData = json.load(f)
-        lat, long, heading = standData[airportICAO][standNumber].split(",")
+        lat, long, heading, _ = standData[airportICAO][standNumber].split(",")
         image = Image.open(resourcePath("icons8-plane-50.png"))
         # TODO: make dynamic scaling
         resized_image = image.resize((20, 20))
