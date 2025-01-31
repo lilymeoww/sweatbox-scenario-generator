@@ -38,7 +38,6 @@ class App(customtkinter.CTk):
         self.selectableAirports = {}
         self.loadAirports()
         self.activeAirport = None
-        self.switchAirport(self.selectableAirports["EGPH"]["airport"])
 
         self.loadOptions()
 
@@ -83,6 +82,8 @@ class App(customtkinter.CTk):
         photo = ImageTk.PhotoImage(rotated_image)
         self.mapWidget.set_marker(
             55.9505, -3.3612, icon=photo)
+
+        self.switchAirport(self.selectableAirports["EGPH"]["airport"])
 
         self.summaryFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
@@ -281,13 +282,14 @@ class App(customtkinter.CTk):
             text=f"Percentage of Flightplan Errors: {int(value)}%")
 
     def switchAirport(self, airport: Airport) -> None:
-        """Switch the active airport
+        """Switch the active airport and center the map
 
         Args:
             airport (Airport): New airport
         """
         self.activeAirport = airport
         print(f"SYSTEM: ACTIVE AIRPORT {airport.icao}")
+        # self.mapWidget.set_address("colosseo, rome, italy") TODO - Center map
 
     def loadAirports(self) -> None:
         """Load airport data from file
