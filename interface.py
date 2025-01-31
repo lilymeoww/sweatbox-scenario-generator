@@ -4,7 +4,7 @@ import customtkinter
 import os
 import re
 import json
-from utils import generateSweatboxText, Pilot, Airport, Controller
+from utils import resourcePath, generateSweatboxText, Pilot, Airport, Controller
 import tkintermapview
 from PIL import Image, ImageTk
 
@@ -18,7 +18,7 @@ class App(customtkinter.CTk):
         # Modes: "System" (standard), "Dark", "Light"
         customtkinter.set_appearance_mode("Dark")
         # Themes: "blue" (standard), "green", "dark-blue"
-        customtkinter.set_default_color_theme("blue")
+        customtkinter.set_default_color_theme(resourcePath("theme.json"))
 
         # configure window
         self.title("Sweatbox Scenario Generator")
@@ -36,7 +36,7 @@ class App(customtkinter.CTk):
         self.activeControllers = {}
 
         # Import initial airport data
-        with open("rsc/airportConfig.json") as configData:
+        with open(resourcePath("rsc/airportConfig.json")) as configData:
             airportConfigs = json.load(configData)
         # TODO: Un-hard code the ICAO. (Not a clue how though)
         initial = airportConfigs.get("EGPH")
@@ -83,7 +83,7 @@ class App(customtkinter.CTk):
         # TODO make Dynamic
         self.mapWidget.set_position(55.9505, -3.3612)
         self.mapWidget.set_zoom(15)
-        image = Image.open("icons8-plane-50.png")
+        image = Image.open(resourcePath("icons8-plane-50.png"))
         # Resize the image to 25x25 pixels
         resized_image = image.resize((25, 25))
         rotated_image = resized_image.rotate(
@@ -240,7 +240,7 @@ class App(customtkinter.CTk):
         return filedialog.askdirectory(title=f"Select {dir}")
 
     def getControllers(self) -> list[Controller]:
-        with open("rsc/controllers.json")as f:
+        with open(resourcePath("rsc/controllers.json"))as f:
             data = json.load(f)
         controllers = []
         for airport in self.activeControllers:
@@ -421,7 +421,7 @@ class App(customtkinter.CTk):
         def saveControllers() -> None:
             controllerWindow.destroy()
 
-        with open("rsc/controllers.json")as f:
+        with open(resourcePath("rsc/controllers.json"))as f:
             controllers = json.load(f)
 
         save_button = customtkinter.CTkButton(
