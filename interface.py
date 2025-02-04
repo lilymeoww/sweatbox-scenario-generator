@@ -28,6 +28,8 @@ class App(customtkinter.CTk):
         self.invalidRoutePercentage = tk.IntVar()
         self.invalidLevelPercentage = tk.IntVar()
         self.fplanErrorsPercentage = tk.IntVar()
+        self.arrivalRateType = customtkinter.StringVar(
+            value="MIT")  # can be MIT / TIME
 
         self.sectorFileLocation = None
         self.outputDirectory = None
@@ -79,18 +81,17 @@ class App(customtkinter.CTk):
 
         # TODO: Move back to a relevant place?
         self.switchAirport(self.selectableAirports["EGPH"]["airport"])
-
-        self.summaryFrame = customtkinter.CTkFrame(
+        self.configFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
-        self.summaryFrame.grid(row=0, column=2, rowspan=1,
-                               sticky="nsew", padx=5, pady=5)
-        self.summaryFrame.grid_columnconfigure(0, weight=1)
-        self.summaryFrame.grid_rowconfigure(4, weight=1)
+        self.configFrame.grid(row=0, column=2, rowspan=1,
+                              sticky="nsew", padx=5, pady=5)
+        self.configFrame.grid_columnconfigure(0, weight=1)
+        self.configFrame.grid_rowconfigure(4, weight=1)
 
-        customtkinter.CTkLabel(self.summaryFrame, text="Summary",
+        customtkinter.CTkLabel(self.configFrame, text="Configure",
                                font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=0, column=0, padx=0, pady=(15, 10))
 
-        self.sliderFrame = customtkinter.CTkFrame(
+        self.sliderFrame = customtkinter.CTkScrollableFrame(
             self, corner_radius=12)
         self.sliderFrame.grid(row=1, column=2, rowspan=2,
                               sticky="nsew", padx=5, pady=5)
@@ -165,6 +166,21 @@ class App(customtkinter.CTk):
             self.sliderFrame, from_=0, to=100, variable=self.fplanErrorsPercentage,
             command=self.updateFplanErrorsLabel)
         invalidFplnSlider.grid(row=7, column=0, padx=5, pady=(0, 20))
+
+        self.arrivalRateLabel = customtkinter.CTkLabel(
+            self.sliderFrame, text="Arrival Rate (MIT)", fg_color="transparent", justify="left")
+        self.arrivalRateLabel.grid(row=8, column=0, padx=5, pady=5)
+
+        arrivalRateUnit = customtkinter.CTkSwitch(
+            self.sliderFrame, text="MIT / TIME", command=self.updateArrivalRateLabel, variable=self.arrivalRateType, onvalue="TIME", offvalue="MIT")
+        arrivalRateUnit.grid(row=9, column=0, padx=5, pady=(0, 20))
+
+        self.arrivalRateEntry = customtkinter.CTkEntry(
+            self.sliderFrame, placeholder_text="csv for variable sep")
+        self.arrivalRateEntry.grid(row=10, column=0, padx=5, pady=(0, 20))
+        self.sbLengthEntry = customtkinter.CTkEntry(
+            self.sliderFrame, placeholder_text="Length (min)")
+        self.sbLengthEntry.grid(row=11, column=0, padx=5, pady=(0, 20))
 
     def placeAirportSelect(self) -> None:
         """Place airport select buttons
@@ -297,6 +313,10 @@ class App(customtkinter.CTk):
     def updateFplanErrorsLabel(self, value) -> None:
         self.invalidFplnLabel.configure(
             text=f"Percentage of Flightplan Errors: {int(value)}%")
+
+    def updateArrivalRateLabel(self) -> None:
+        self.arrivalRateLabel.configure(
+            text=f"Arrival Rate ({self.arrivalRateType.get()})")
 
     def switchAirport(self, airport: Airport) -> None:
         """Switch the active airport and center the map
