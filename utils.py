@@ -97,7 +97,7 @@ class Pilot:
         Pseudo route for aircraft
     """
 
-    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, timeUntilSpawn: str = 0, levelByFix: str = '', levelByLevel: str = "7000"):
+    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, timeUntilSpawn: str = 0, levelByFix: str = '', levelByLevel: str = "3000"):
         self.cs = cs
         self.lat = lat
         self.long = long
@@ -213,7 +213,7 @@ class Scenario:
         return scenario_file_str
 
 
-def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot]) -> str:
+def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot], arrivalDelays: list[str]) -> str:
     """Generates pilots and controllers, adds them to a scenario and generates the resulting text
 
     Args:
@@ -226,6 +226,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
         controllers (list[Controller]): List of controllers
         autoPilots (int): Number of pilots to generate automatically
         manualPilots (list[Pilot]): List of manual pilots to add
+        arrivalDelays (list[str]): List offset for arrival spawning (in minutes)
 
     Returns:
         str: Returns string of scenario

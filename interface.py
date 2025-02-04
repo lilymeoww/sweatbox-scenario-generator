@@ -272,8 +272,29 @@ class App(customtkinter.CTk):
         print(f"SYSTEM: {self.invalidLevelPercentage.get()=}%")
         print(f"SYSTEM: {self.fplanErrorsPercentage.get()=}%")
 
+        rate = [t.strip() for t in self.arrivalRateEntry.get().split(",") if t]
+        if self.arrivalRateType.get() == "TIME":
+            ...  # processing needed?
+        elif self.arrivalRateType.get() == "MIT":
+            time_delays = []
+            for mit in rate:
+                try:
+                    mit_value = float(mit)
+                    speed = 180  # kts
+                    time_delay = (mit_value / speed) * 60
+                    time_delays.append(time_delay)
+                except ValueError:
+                    print(f"ERROR: Invalid MIT value '{mit}'")
+            rate = time_delays
+        else:
+            print(f"ERROR : {self.arrivalRateType=}")
+
+        offsets = [rate[0]]
+        for i, r in enumerate(rate[1:]):
+            offsets.append(str(int(offsets[i]) + int(r)))
+
         self.sweatboxContents = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
-                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots)
+                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots, offsets)
 
         print(f"SYSTEM: GENERATED SWEATBOX FILE")
 
@@ -289,7 +310,7 @@ class App(customtkinter.CTk):
             self.writeOptions()
 
         if not fileName:
-            print("ERROR: COULD NOT OUTPUT FILE")
+            print("ERROR : COULD NOT OUTPUT FILE")
             return
         with open(fileName, "w")as outFile:
             outFile.write(self.sweatboxContents)
