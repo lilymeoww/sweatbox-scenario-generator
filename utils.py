@@ -213,7 +213,7 @@ class Scenario:
         return scenario_file_str
 
 
-def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot], arrivalDelays: list[str]) -> str:
+def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot], arrivalOffsets: list[str]) -> str:
     """Generates pilots and controllers, adds them to a scenario and generates the resulting text
 
     Args:
@@ -226,7 +226,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
         controllers (list[Controller]): List of controllers
         autoPilots (int): Number of pilots to generate automatically
         manualPilots (list[Pilot]): List of manual pilots to add
-        arrivalDelays (list[str]): List of offsets for arrival spawning (in minutes)
+        arrivalOffsets (list[str]): List of offsets for arrival spawning (in minutes)
 
     Returns:
         str: Returns string of scenario
@@ -238,6 +238,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
 
     pilots = generate_random_plans(autoPilots, airport, vfrP,
                                    invalidRouteP, invalidLevelP, fplanErrorsP)
+    pilots.append(generate_arrival_plans(airport, arrivalOffsets))
     for pilot in pilots:
         scenario.add_pilot(pilot)
 
@@ -247,7 +248,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
     return scenario.generate_scenario()
 
 
-def generate_arrival_plan(arrival: Airport, offset: str) -> list[Pilot]:
+def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
     ...
 
 
