@@ -238,7 +238,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
 
     pilots = generate_random_plans(autoPilots, airport, vfrP,
                                    invalidRouteP, invalidLevelP, fplanErrorsP)
-    pilots.append(generate_arrival_plans(airport, arrivalOffsets))
+    pilots += generate_arrival_plans(airport, arrivalOffsets)
     for pilot in pilots:
         scenario.add_pilot(pilot)
 
