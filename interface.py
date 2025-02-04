@@ -130,7 +130,7 @@ class App(customtkinter.CTk):
 
         # VFR Traffic
         self.vfrLabel = customtkinter.CTkLabel(
-            self.sliderFrame, text=f"Percentage of VFR Aircraft: 0%", fg_color="transparent", justify="left")
+            self.sliderFrame, text=f"Percentage of VFR Aircraft: 0%, \n(0 aircraft)", fg_color="transparent", justify="left")
         self.vfrLabel.grid(row=0, column=0, padx=0, pady=10)
 
         vfrSlider = customtkinter.CTkSlider(
@@ -283,8 +283,12 @@ class App(customtkinter.CTk):
         self.destroy()
 
     def updateVFRLabel(self, value) -> None:
+        numberOfPlanes = int(self.numberOfPlanesEntry.get(
+        )) if self.numberOfPlanesEntry.get() else 20
+        numberOfVfr = int(numberOfPlanes * value/100)
+
         self.vfrLabel.configure(
-            text=f"Percentage of VFR Aircraft: {int(value)}%")
+            text=f"Percentage of VFR Aircraft: {int(value)}%, \n({numberOfVfr} aircraft)")
 
     def updateInvalidRouteLabel(self, value) -> None:
         self.invalidRouteLabel.configure(
