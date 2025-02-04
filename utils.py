@@ -226,7 +226,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
         controllers (list[Controller]): List of controllers
         autoPilots (int): Number of pilots to generate automatically
         manualPilots (list[Pilot]): List of manual pilots to add
-        arrivalDelays (list[str]): List offset for arrival spawning (in minutes)
+        arrivalDelays (list[str]): List of offsets for arrival spawning (in minutes)
 
     Returns:
         str: Returns string of scenario
@@ -247,6 +247,10 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
     return scenario.generate_scenario()
 
 
+def generate_arrival_plan(arrival: Airport, offset: str) -> list[Pilot]:
+    ...
+
+
 def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_factor: int, level_factor: int, entry_error_factor: int) -> list[Pilot]:
     """Generates a given number of VFR and IFR flightplans
 
@@ -263,8 +267,6 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     """
     numberOfVfr = int(amount * vfr_factor/100)
 
-    standsUsed = set()
-    vfrCallsignsUsed = set()
     pilots = []
 
     with open(resourcePath("rsc/stands.json")) as jsonData:
@@ -278,11 +280,8 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     current_sq = 0
     for _ in range(numberOfVfr):
         current_sq += 1
-        # callsigns = callsigns - vfrCallsignsUsed
-        # stands = stands - standsUsed
         cs = random.choice(list(callsigns))
         callsigns.pop(cs, None)
-        # vfrCallsignsUsed.add(cs)
         rules = "V"
         dest = random.choice(
             ["EGPF", "EGPB", "EGNX", "EGPC", "EGAA", "EGPH", "EGLK", "EGLF", "EGMA", "EGFF"])
@@ -320,7 +319,6 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         sq = f"{current_sq:04}"
         depAirport = dep.icao
 
-        # stands = stands - standsUsed
         chosenCallsign = random.choice(list(callsigns))
         cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
             string.ascii_uppercase) + random.choice(string.ascii_uppercase)
