@@ -97,7 +97,7 @@ class Pilot:
         Pseudo route for aircraft
     """
 
-    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str):
+    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, timeUntilSpawn: str = 0, levelByFix: str = '', levelByLevel: str = "7000"):
         self.cs = cs
         self.lat = lat
         self.long = long
@@ -112,6 +112,9 @@ class Pilot:
         self.rmk = rmk
         self.rte = rte
         self.pseudo_route = pseudo_route
+        self.timeUntilSpawn = timeUntilSpawn
+        self.levelByFix = levelByFix
+        self.levelByLevel = levelByLevel
 
     def __str__(self):
         return (f"\nPSEUDOPILOT:{self.dep}_M_GND\n"
@@ -121,8 +124,9 @@ class Pilot:
                     self.crz}:{self.dest.strip()}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
             f"SIMDATA:{self.cs}:*:*:25.1.0.000\n"
             f"$ROUTE:{self.pseudo_route}\n"
-            f"DELAY:1:2\n"
-            f"REQALT::7000\n"
+            f"START:{self.timeUntilSpawn}\n"
+            f"DELAY:1:2\n"  # TODO - do mentors want this?
+            f"REQALT:{self.levelByFix}:{self.levelByLevel}\n"  # Level by???
             f"INITIALPSEUDOPILOT:{self.dep}_M_GND")
 
 
