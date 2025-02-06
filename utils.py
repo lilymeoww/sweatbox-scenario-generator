@@ -97,7 +97,7 @@ class Pilot:
         Pseudo route for aircraft
     """
 
-    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, speed: str = "420", timeUntilSpawn: str = "0", levelByFix: str = '', levelByLevel: str = "3000"):
+    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, speed: str = "420", timeUntilSpawn: str = "0", levelByFix: str = '', levelByLevel: str = "3000",owner: str = None):
         self.cs = cs
         self.lat = lat
         self.long = long
@@ -116,9 +116,14 @@ class Pilot:
         self.timeUntilSpawn = timeUntilSpawn
         self.levelByFix = levelByFix
         self.levelByLevel = levelByLevel
+        if not owner:
+            self.owner = self.dep
+        else:
+            self.owner = owner
+
 
     def __str__(self):
-        return (f"\nPSEUDOPILOT:{self.dep}_M_GND\n"
+        return (f"\nPSEUDOPILOT:{self.owner}_M_GND\n"
                 f"@N:{self.cs}:{self.sq.rjust(4, '0')}:1:{self.lat}:{self.long}:{
             self.alt}:0:{self.hdg}:0\n"
             f"$FP{self.cs}:*A:{self.rules}:{self.ac_type}:{self.speed}:{self.dep}:0000::{
@@ -128,7 +133,7 @@ class Pilot:
             f"START:{self.timeUntilSpawn}\n"
             f"DELAY:1:2\n"  # TODO - do mentors want this?
             f"REQALT:{self.levelByFix}:{self.levelByLevel}\n"  # Level by???
-            f"INITIALPSEUDOPILOT:{self.dep}_M_GND")
+            f"INITIALPSEUDOPILOT:{self.owner}_M_GND")
 
 
 class Stand:
@@ -266,7 +271,9 @@ def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
         chosenCallsign = random.choice(list(callsigns))
         cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
             string.ascii_uppercase) + random.choice(string.ascii_uppercase)
-        actype = random.choice(list(types[chosenCallsign]))
+        print(types[chosenCallsign])
+        actype = random.choice((types[chosenCallsign].split(",")))
+        print(f"SYSTEM: ARRIVAL {actype=}")
         rules = "I"
         lat = 55.717191666667  # TODO change from TARTN
         long = -3.1385361111111
@@ -283,7 +290,7 @@ def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
         levelAtFix = "2500"
 
         pilot = Pilot(cs, lat, long, alt, heading, dep, sq,
-                      rules, actype, cruiseLevel, dest, rmk, route, pseudoRoute, "180", offset, levelByFix, levelAtFix)
+                      rules, actype, cruiseLevel, dest, rmk, route, pseudoRoute, "180", offset, levelByFix, levelAtFix,owner="EGPH")
         pilots.append(pilot)
 
     return pilots
