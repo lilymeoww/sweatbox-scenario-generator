@@ -330,7 +330,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         stands.pop(stand)
 
         lat, long, hdg, block = selectedStand[0], selectedStand[1], int(
-            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
+            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2, selectedStand[3]
         for standToRemove in block:
             if standToRemove in stands:
                 stands.pop(standToRemove)
