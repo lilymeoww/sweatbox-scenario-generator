@@ -97,7 +97,7 @@ class Pilot:
         Pseudo route for aircraft
     """
 
-    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, timeUntilSpawn: str = 0, levelByFix: str = '', levelByLevel: str = "3000"):
+    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, speed: str = "420", timeUntilSpawn: str = "0", levelByFix: str = '', levelByLevel: str = "3000"):
         self.cs = cs
         self.lat = lat
         self.long = long
@@ -112,6 +112,7 @@ class Pilot:
         self.rmk = rmk
         self.rte = rte
         self.pseudo_route = pseudo_route
+        self.speed = speed
         self.timeUntilSpawn = timeUntilSpawn
         self.levelByFix = levelByFix
         self.levelByLevel = levelByLevel
@@ -120,7 +121,7 @@ class Pilot:
         return (f"\nPSEUDOPILOT:{self.dep}_M_GND\n"
                 f"@N:{self.cs}:{self.sq.rjust(4, '0')}:1:{self.lat}:{self.long}:{
             self.alt}:0:{self.hdg}:0\n"
-            f"$FP{self.cs}:*A:{self.rules}:{self.ac_type}:420:{self.dep}:0000::{
+            f"$FP{self.cs}:*A:{self.rules}:{self.ac_type}:{self.speed}:{self.dep}:0000::{
                     self.crz}:{self.dest.strip()}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
             f"SIMDATA:{self.cs}:*:*:25.1.0.000\n"
             f"$ROUTE:{self.pseudo_route}\n"
@@ -282,7 +283,7 @@ def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
         levelAtFix = "2500"
 
         pilot = Pilot(cs, lat, long, alt, heading, dep, sq,
-                      rules, actype, cruiseLevel, dest, rmk, route, pseudoRoute, offset, levelByFix, levelAtFix)
+                      rules, actype, cruiseLevel, dest, rmk, route, pseudoRoute, "180", offset, levelByFix, levelAtFix)
         pilots.append(pilot)
 
     return pilots
