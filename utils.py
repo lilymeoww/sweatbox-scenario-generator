@@ -249,7 +249,43 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
 
 
 def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
-    ...
+    pilots = []
+    with open(resourcePath("rsc/callsignsIFR.json")) as jsonData:
+        JSONInjest = json.load(jsonData)
+    callsigns = JSONInjest.get("callsigns")
+
+    with open(resourcePath("rsc/aircraftTypes.json")) as jsonData:
+        JSONInjest = json.load(jsonData)
+    types = JSONInjest.get("callsigns")
+
+    with open(resourcePath("rsc/arrivalRoutes.json"))as jsonData:
+        arrivalRoutes = json.load(jsonData)
+
+    for offset in offsets:
+        chosenCallsign = random.choice(list(callsigns))
+        cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
+            string.ascii_uppercase) + random.choice(string.ascii_uppercase)
+        actype = random.choice(list(types[chosenCallsign]))
+        rules = "I"
+        lat = 55.717191666667  # TODO change from TARTN
+        long = -3.1385361111111
+        alt = 7000
+        heading = int(((22 * 2.88) + 0.5)) << 2
+        dep = "EGLL"
+        sq = "0000"
+        cruiseLevel = "38000"
+        dest = arrival.icao
+        rmk = "v"
+        route = "ULTIB T420 TNT UN57 POL UN601 INPIP"
+        pseudoRoute = f"{" ".join(arrivalRoutes[arrival.icao])} CF24 ILS24"
+        levelByFix = "CF24"
+        levelAtFix = "2500"
+
+        pilot = Pilot(cs, lat, long, alt, heading, dep, sq,
+                      rules, actype, cruiseLevel, dest, rmk, route, pseudoRoute, offset, levelByFix, levelAtFix)
+        pilots.append(pilot)
+
+    return pilots
 
 
 def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_factor: int, level_factor: int, entry_error_factor: int) -> list[Pilot]:
