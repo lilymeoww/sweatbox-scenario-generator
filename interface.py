@@ -282,7 +282,7 @@ class App(customtkinter.CTk):
             for mit in rate:
                 try:
                     mit_value = float(mit)
-                    speed = 180  # kts
+                    speed = 270  # kts
                     time_delay = (mit_value / speed) * 60
                     time_delays.append(time_delay)
                 except ValueError:
