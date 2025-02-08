@@ -136,38 +136,6 @@ class Pilot:
             f"INITIALPSEUDOPILOT:{self.owner}_M_GND")
 
 
-class Stand:
-
-    def __init__(self, number, lat, long, heading):
-        """Represents a Stand at an airport
-        Attributes:
-        -----------
-        airport : str
-            ICAO code of the airport the stand is at
-        number : str
-            Identifier of the stand, e.g 5 or 45C
-        lat : str
-            Latitude of the stand
-        long : str
-            Longitude of the stand
-        heading : str
-            Heading of the stand between 0 and 359 degrees
-        """
-
-    # TODO: Moved to dictionary object. Class no longer required.
-
-    def __init__(self, airport: str, number: str, lat: str, long: str, heading: str):
-        self.airport = airport
-
-        self.number = number
-        self.lat = lat
-        self.long = long
-        self.heading = heading
-
-    def __repr__(self):
-        return f"Stand(number={self.number}, lat={self.lat}, long={self.long}, heading={self.heading})"
-
-
 class Scenario:
     """Represents a sweatbox scenario
 
