@@ -274,8 +274,10 @@ class App(customtkinter.CTk):
 
         rate = [t.strip() for t in self.arrivalRateEntry.get().split(",") if t]
         if self.arrivalRateType.get() == "TIME":
+            print("SYSTEM: USING TIME BASED SEP")
             ...  # processing needed?
         elif self.arrivalRateType.get() == "MIT":
+            print("SYSTEM: USING MIT")
             time_delays = []
             for mit in rate:
                 try:
@@ -292,7 +294,7 @@ class App(customtkinter.CTk):
         offsets = [rate[0]]
         for i, r in enumerate(rate[1:]):
             offsets.append(str(int(offsets[i]) + int(r)))
-
+        print(f"SYSTEM: {offsets=}")
         self.sweatboxContents = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots, offsets)
 
