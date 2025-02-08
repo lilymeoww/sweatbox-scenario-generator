@@ -294,11 +294,16 @@ class App(customtkinter.CTk):
         offsets = [rate[0]]
         for i, r in enumerate(rate[1:]):
             offsets.append(str(int(offsets[i]) + int(r)))
-
+        print(f"SYSTEM: {offsets=}")
         lastPlane = offsets[-1]
         lengthOfSb = self.sbLengthEntry.get()
-        repetitions = (lastPlane // lengthOfSb) + 1
-        offsets *= repetitions
+        repetitions = (int(lengthOfSb) // int(lastPlane)) + 1
+
+        extended_offsets = []
+        for _ in range(repetitions):
+            extended_offsets.extend([str(int(offset) + int(extended_offsets[-1]) if extended_offsets else int(offset)) for offset in offsets])
+        offsets = extended_offsets
+        offsets = [offset for offset in offsets if int(offset) <= int(lengthOfSb)]
         print(f"SYSTEM: {offsets=}")
         self.sweatboxContents = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots, offsets)
