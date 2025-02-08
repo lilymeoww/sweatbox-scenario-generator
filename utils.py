@@ -271,7 +271,6 @@ def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
         chosenCallsign = random.choice(list(callsigns))
         cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
             string.ascii_uppercase) + random.choice(string.ascii_uppercase)
-        print(types[chosenCallsign])
         actype = random.choice((types[chosenCallsign].split(",")))
         print(f"SYSTEM: ARRIVAL {actype=}")
         rules = "I"
@@ -446,7 +445,7 @@ def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str,
         return route[0], route[1]
 
     except FileNotFoundError:
-        print("Error: file not found.")
+        print("ERROR : file not found.")
     return f"{departure} {arrival}", "E"
 
 
