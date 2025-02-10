@@ -6,7 +6,8 @@ import re
 import json
 from utils import resourcePath, generateSweatboxText, Pilot, Airport, Controller
 import tkintermapview
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk#
+from Modal import Modal
 
 
 class App(customtkinter.CTk):
@@ -189,6 +190,8 @@ class App(customtkinter.CTk):
         airportDropdown = customtkinter.CTkOptionMenu(
             self.airportSelectFrame, variable=airportVar, values=list(self.selectableAirports.keys()), command=lambda _: self.switchAirport(self.selectableAirports[airportVar.get()]["airport"]))
         airportDropdown.grid(row=1, column=0, padx=20, pady=10)
+
+        customtkinter.CTkButton(self.airportSelectFrame, text="Test", command=lambda: Modal(self,"This is a test modal")).grid(row=2, column=0, pady=10)
 
     def getSectorFile(self) -> str:
         """Get the location of the sectorfile
@@ -551,6 +554,8 @@ class App(customtkinter.CTk):
         self.mapWidget.set_marker(
             float(lat), float(long), icon=planeIcon)
 
+    def addNewModal(self, text):
+        Modal(text,self)
 
 if __name__ == "__main__":
     app = App()
