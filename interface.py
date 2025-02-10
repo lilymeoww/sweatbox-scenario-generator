@@ -293,6 +293,7 @@ class App(customtkinter.CTk):
             rate = time_delays
         else:
             print(f"ERROR : {self.arrivalRateType=}")
+            Modal(self,f"Something has gone wrong \nArrival Rate type = {self.arrivalRateType} \nPlease Try again")
 
         offsets = [rate[0]]
         for i, r in enumerate(rate[1:]):
@@ -326,11 +327,13 @@ class App(customtkinter.CTk):
 
         if not fileName:
             print("ERROR : COULD NOT OUTPUT FILE")
+            Modal(self,"Could not find output location \nPlease Try Again")
             return
         with open(fileName, "w")as outFile:
             outFile.write(self.sweatboxContents)
 
         print(f"SYSTEM: FILE WRITTEN TO {fileName}")
+        Modal(self,"Sweatbox Generated","Success!")
         print(f"SYSTEM: BYE")
         self.destroy()
 
@@ -554,8 +557,6 @@ class App(customtkinter.CTk):
         self.mapWidget.set_marker(
             float(lat), float(long), icon=planeIcon)
 
-    def addNewModal(self, text):
-        Modal(text,self)
 
 if __name__ == "__main__":
     app = App()
