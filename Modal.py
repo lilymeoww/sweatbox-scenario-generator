@@ -5,7 +5,6 @@ class Modal:
         self.parent = parent
         self.text = text
         self.type_ = "Error" if not type_ else type_
-        print(type_)
         self.titleColor = "red" if not type_ else "green"
         self.create_modal()
 
@@ -22,13 +21,9 @@ class Modal:
         modal.attributes("-topmost", True)
         modal.geometry(f"{modal_width}x{modal_height}+{x}+{y}")
 
-
-        def close() -> None:
-            modal.destroy()
-
         customtkinter.CTkLabel(modal, text=self.type_.upper(), font=("Arial", 16, "bold"), text_color=self.titleColor).grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         customtkinter.CTkLabel(modal, text=self.text).grid(row=1, column=0, pady=20, padx=20, sticky="nsew")
-        customtkinter.CTkButton(modal, text="Close", command=close).grid(row=2, column=0, pady=20, padx=20, sticky="nsew")
+        customtkinter.CTkButton(modal, text="Close", command=lambda: modal.destroy()).grid(row=2, column=0, pady=20, padx=20, sticky="nsew")
         
         modal.grid_rowconfigure(0, weight=1)
         modal.grid_rowconfigure(3, weight=1)
