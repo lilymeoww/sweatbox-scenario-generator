@@ -28,6 +28,8 @@ class App(customtkinter.CTk):
         self.invalidRoutePercentage = tk.IntVar()
         self.invalidLevelPercentage = tk.IntVar()
         self.fplanErrorsPercentage = tk.IntVar()
+        self.arrivalRateType = customtkinter.StringVar(
+            value="MIT")  # can be MIT / TIME
 
         self.sectorFileLocation = None
         self.outputDirectory = None
@@ -79,18 +81,17 @@ class App(customtkinter.CTk):
 
         # TODO: Move back to a relevant place?
         self.switchAirport(self.selectableAirports["EGPH"]["airport"])
-
-        self.summaryFrame = customtkinter.CTkFrame(
+        self.configFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
-        self.summaryFrame.grid(row=0, column=2, rowspan=1,
-                               sticky="nsew", padx=5, pady=5)
-        self.summaryFrame.grid_columnconfigure(0, weight=1)
-        self.summaryFrame.grid_rowconfigure(4, weight=1)
+        self.configFrame.grid(row=0, column=2, rowspan=1,
+                              sticky="nsew", padx=5, pady=5)
+        self.configFrame.grid_columnconfigure(0, weight=1)
+        self.configFrame.grid_rowconfigure(4, weight=1)
 
-        customtkinter.CTkLabel(self.summaryFrame, text="Summary",
+        customtkinter.CTkLabel(self.configFrame, text="Configure",
                                font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=0, column=0, padx=0, pady=(15, 10))
 
-        self.sliderFrame = customtkinter.CTkFrame(
+        self.sliderFrame = customtkinter.CTkScrollableFrame(
             self, corner_radius=12)
         self.sliderFrame.grid(row=1, column=2, rowspan=2,
                               sticky="nsew", padx=5, pady=5)
@@ -165,6 +166,21 @@ class App(customtkinter.CTk):
             self.sliderFrame, from_=0, to=100, variable=self.fplanErrorsPercentage,
             command=self.updateFplanErrorsLabel)
         invalidFplnSlider.grid(row=7, column=0, padx=5, pady=(0, 20))
+
+        self.arrivalRateLabel = customtkinter.CTkLabel(
+            self.sliderFrame, text="Arrival Rate (MIT)", fg_color="transparent", justify="left")
+        self.arrivalRateLabel.grid(row=8, column=0, padx=5, pady=5)
+
+        arrivalRateUnit = customtkinter.CTkSwitch(
+            self.sliderFrame, text="MIT / TIME", command=self.updateArrivalRateLabel, variable=self.arrivalRateType, onvalue="TIME", offvalue="MIT")
+        arrivalRateUnit.grid(row=9, column=0, padx=5, pady=(0, 20))
+
+        self.arrivalRateEntry = customtkinter.CTkEntry(
+            self.sliderFrame, placeholder_text="csv for variable sep")
+        self.arrivalRateEntry.grid(row=10, column=0, padx=5, pady=(0, 20))
+        self.sbLengthEntry = customtkinter.CTkEntry(
+            self.sliderFrame, placeholder_text="Length (min)")
+        self.sbLengthEntry.grid(row=11, column=0, padx=5, pady=(0, 20))
 
     def placeAirportSelect(self) -> None:
         """Place airport select buttons
@@ -256,8 +272,41 @@ class App(customtkinter.CTk):
         print(f"SYSTEM: {self.invalidLevelPercentage.get()=}%")
         print(f"SYSTEM: {self.fplanErrorsPercentage.get()=}%")
 
+        rate = [t.strip() for t in self.arrivalRateEntry.get().split(",") if t]
+        if self.arrivalRateType.get() == "TIME":
+            print("SYSTEM: USING TIME BASED SEP")
+            ...  # processing needed?
+        elif self.arrivalRateType.get() == "MIT":
+            print("SYSTEM: USING MIT")
+            time_delays = []
+            for mit in rate:
+                try:
+                    mit_value = float(mit)
+                    speed = 270  # kts
+                    time_delay = (mit_value / speed) * 60
+                    time_delays.append(time_delay)
+                except ValueError:
+                    print(f"ERROR: Invalid MIT value '{mit}'")
+            rate = time_delays
+        else:
+            print(f"ERROR : {self.arrivalRateType=}")
+
+        offsets = [rate[0]]
+        for i, r in enumerate(rate[1:]):
+            offsets.append(str(int(offsets[i]) + int(r)))
+        print(f"SYSTEM: {offsets=}")
+        lastPlane = offsets[-1]
+        lengthOfSb = self.sbLengthEntry.get()
+        repetitions = (int(lengthOfSb) // int(lastPlane)) + 1
+
+        extended_offsets = []
+        for _ in range(repetitions):
+            extended_offsets.extend([str(int(offset) + int(extended_offsets[-1]) if extended_offsets else int(offset)) for offset in offsets])
+        offsets = extended_offsets
+        offsets = [offset for offset in offsets if int(offset) <= int(lengthOfSb)]
+        print(f"SYSTEM: {offsets=}")
         self.sweatboxContents = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
-                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots)
+                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots, offsets)
 
         print(f"SYSTEM: GENERATED SWEATBOX FILE")
 
@@ -273,7 +322,7 @@ class App(customtkinter.CTk):
             self.writeOptions()
 
         if not fileName:
-            print("ERROR: COULD NOT OUTPUT FILE")
+            print("ERROR : COULD NOT OUTPUT FILE")
             return
         with open(fileName, "w")as outFile:
             outFile.write(self.sweatboxContents)
@@ -301,6 +350,10 @@ class App(customtkinter.CTk):
     def updateFplanErrorsLabel(self, value) -> None:
         self.invalidFplnLabel.configure(
             text=f"Percentage of Flightplan Errors: {int(value)}%")
+
+    def updateArrivalRateLabel(self) -> None:
+        self.arrivalRateLabel.configure(
+            text=f"Arrival Rate ({self.arrivalRateType.get()})")
 
     def switchAirport(self, airport: Airport) -> None:
         """Switch the active airport and center the map

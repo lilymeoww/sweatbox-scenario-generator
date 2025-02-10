@@ -97,7 +97,7 @@ class Pilot:
         Pseudo route for aircraft
     """
 
-    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str):
+    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, speed: str = "420", timeUntilSpawn: str = "0", levelByFix: str = '', levelByLevel: str = "3000",owner: str = None):
         self.cs = cs
         self.lat = lat
         self.long = long
@@ -112,50 +112,28 @@ class Pilot:
         self.rmk = rmk
         self.rte = rte
         self.pseudo_route = pseudo_route
+        self.speed = speed
+        self.timeUntilSpawn = timeUntilSpawn
+        self.levelByFix = levelByFix
+        self.levelByLevel = levelByLevel
+        if not owner:
+            self.owner = self.dep
+        else:
+            self.owner = owner
+
 
     def __str__(self):
-        return (f"\nPSEUDOPILOT:{self.dep}_M_GND\n"
+        return (f"\nPSEUDOPILOT:{self.owner}_M_GND\n"
                 f"@N:{self.cs}:{self.sq.rjust(4, '0')}:1:{self.lat}:{self.long}:{
             self.alt}:0:{self.hdg}:0\n"
-            f"$FP{self.cs}:*A:{self.rules}:{self.ac_type}:420:{self.dep}:0000::{
+            f"$FP{self.cs}:*A:{self.rules}:{self.ac_type}:{self.speed}:{self.dep}:0000::{
                     self.crz}:{self.dest.strip()}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
             f"SIMDATA:{self.cs}:*:*:25.1.0.000\n"
             f"$ROUTE:{self.pseudo_route}\n"
-            f"DELAY:1:2\n"
-            f"REQALT::7000\n"
-            f"INITIALPSEUDOPILOT:{self.dep}_M_GND")
-
-
-class Stand:
-
-    def __init__(self, number, lat, long, heading):
-        """Represents a Stand at an airport
-        Attributes:
-        -----------
-        airport : str
-            ICAO code of the airport the stand is at
-        number : str
-            Identifier of the stand, e.g 5 or 45C
-        lat : str
-            Latitude of the stand
-        long : str
-            Longitude of the stand
-        heading : str
-            Heading of the stand between 0 and 359 degrees
-        """
-
-    # TODO: Moved to dictionary object. Class no longer required.
-
-    def __init__(self, airport: str, number: str, lat: str, long: str, heading: str):
-        self.airport = airport
-
-        self.number = number
-        self.lat = lat
-        self.long = long
-        self.heading = heading
-
-    def __repr__(self):
-        return f"Stand(number={self.number}, lat={self.lat}, long={self.long}, heading={self.heading})"
+            f"START:{self.timeUntilSpawn}\n"
+            f"DELAY:1:2\n"  # TODO - do mentors want this?
+            f"REQALT:{self.levelByFix}:{self.levelByLevel}\n"  # Level by???
+            f"INITIALPSEUDOPILOT:{self.owner}_M_GND")
 
 
 class Scenario:
@@ -209,7 +187,7 @@ class Scenario:
         return scenario_file_str
 
 
-def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot]) -> str:
+def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot], arrivalOffsets: list[str]) -> str:
     """Generates pilots and controllers, adds them to a scenario and generates the resulting text
 
     Args:
@@ -222,6 +200,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
         controllers (list[Controller]): List of controllers
         autoPilots (int): Number of pilots to generate automatically
         manualPilots (list[Pilot]): List of manual pilots to add
+        arrivalOffsets (list[str]): List of offsets for arrival spawning (in minutes)
 
     Returns:
         str: Returns string of scenario
@@ -233,6 +212,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
 
     pilots = generate_random_plans(autoPilots, airport, vfrP,
                                    invalidRouteP, invalidLevelP, fplanErrorsP)
+    pilots += generate_arrival_plans(airport, arrivalOffsets)
     for pilot in pilots:
         scenario.add_pilot(pilot)
 
@@ -240,6 +220,47 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
         scenario.add_pilot(pilot)
 
     return scenario.generate_scenario()
+
+
+def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
+    pilots = []
+    with open(resourcePath("rsc/callsignsIFR.json")) as jsonData:
+        JSONInjest = json.load(jsonData)
+    callsigns = JSONInjest.get("callsigns")
+
+    with open(resourcePath("rsc/aircraftTypes.json")) as jsonData:
+        JSONInjest = json.load(jsonData)
+    types = JSONInjest.get("callsigns")
+
+    with open(resourcePath("rsc/arrivalRoutes.json"))as jsonData:
+        arrivalRoutes = json.load(jsonData)
+
+    for offset in offsets:
+        chosenCallsign = random.choice(list(callsigns))
+        cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
+            string.ascii_uppercase) + random.choice(string.ascii_uppercase)
+        actype = random.choice((types[chosenCallsign].split(",")))
+        print(f"SYSTEM: ARRIVAL {actype=}")
+        rules = "I"
+        lat = 55.717191666667  # TODO change from TARTN
+        long = -3.1385361111111
+        alt = 7000
+        heading = int(((22 * 2.88) + 0.5)) << 2
+        dep = "EGLL"
+        sq = "0000"
+        cruiseLevel = "38000"
+        dest = arrival.icao
+        rmk = "v"
+        route = "ULTIB T420 TNT UN57 POL UN601 INPIP"
+        pseudoRoute = f"{" ".join(arrivalRoutes[arrival.icao])} CF24 ILS24"
+        levelByFix = "CF24"
+        levelAtFix = "2500"
+
+        pilot = Pilot(cs, lat, long, alt, heading, dep, sq,
+                      rules, actype, cruiseLevel, dest, rmk, route, pseudoRoute, "180", offset, levelByFix, levelAtFix,owner="EGPH")
+        pilots.append(pilot)
+
+    return pilots
 
 
 def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_factor: int, level_factor: int, entry_error_factor: int) -> list[Pilot]:
@@ -258,8 +279,6 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     """
     numberOfVfr = int(amount * vfr_factor/100)
 
-    standsUsed = set()
-    vfrCallsignsUsed = set()
     pilots = []
 
     with open(resourcePath("rsc/stands.json")) as jsonData:
@@ -273,11 +292,8 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     current_sq = 0
     for _ in range(numberOfVfr):
         current_sq += 1
-        # callsigns = callsigns - vfrCallsignsUsed
-        # stands = stands - standsUsed
         cs = random.choice(list(callsigns))
         callsigns.pop(cs, None)
-        # vfrCallsignsUsed.add(cs)
         rules = "V"
         dest = random.choice(
             ["EGPF", "EGPB", "EGNX", "EGPC", "EGAA", "EGPH", "EGLK", "EGLF", "EGMA", "EGFF"])
@@ -288,7 +304,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         stands.pop(stand)
 
         lat, long, hdg, block = selectedStand[0], selectedStand[1], int(
-            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
+            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2, selectedStand[3]
         for standToRemove in block:
             if standToRemove in stands:
                 stands.pop(standToRemove)
@@ -315,7 +331,6 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         sq = f"{current_sq:04}"
         depAirport = dep.icao
 
-        # stands = stands - standsUsed
         chosenCallsign = random.choice(list(callsigns))
         cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
             string.ascii_uppercase) + random.choice(string.ascii_uppercase)
@@ -398,7 +413,7 @@ def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str,
         return route[0], route[1]
 
     except FileNotFoundError:
-        print("Error: file not found.")
+        print("ERROR : file not found.")
     return f"{departure} {arrival}", "E"
 
 

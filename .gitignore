@@ -179,4 +179,4 @@ cython_debug/
 # Project Specific
 testsb.txt
 sweatbox_generator.config
-sweatbox.txt
+sweatbox*.txt
