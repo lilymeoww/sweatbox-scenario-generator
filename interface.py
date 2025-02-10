@@ -191,7 +191,7 @@ class App(customtkinter.CTk):
             self.airportSelectFrame, variable=airportVar, values=list(self.selectableAirports.keys()), command=lambda _: self.switchAirport(self.selectableAirports[airportVar.get()]["airport"]))
         airportDropdown.grid(row=1, column=0, padx=20, pady=10)
 
-        customtkinter.CTkButton(self.airportSelectFrame, text="Test", command=lambda: Modal(self,"This is a test modal")).grid(row=2, column=0, pady=10)
+        customtkinter.CTkButton(self.airportSelectFrame, text="Test", command=lambda: Modal(self,"This is a test modal","Success")).grid(row=2, column=0, pady=10)
 
     def getSectorFile(self) -> str:
         """Get the location of the sectorfile

@@ -5,7 +5,8 @@ class Modal:
         self.parent = parent
         self.text = text
         self.type_ = "Error" if not type_ else type_
-        self.titleColor = "red" if not type_ else "Green"
+        print(type_)
+        self.titleColor = "red" if not type_ else "green"
         self.create_modal()
 
     def create_modal(self):
@@ -25,7 +26,7 @@ class Modal:
         def close() -> None:
             modal.destroy()
 
-        customtkinter.CTkLabel(modal, text=self.type_.upper(), font=("Arial", 16, "bold"), text_color="red").grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
+        customtkinter.CTkLabel(modal, text=self.type_.upper(), font=("Arial", 16, "bold"), text_color=self.titleColor).grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         customtkinter.CTkLabel(modal, text=self.text).grid(row=1, column=0, pady=20, padx=20, sticky="nsew")
         customtkinter.CTkButton(modal, text="Close", command=close).grid(row=2, column=0, pady=20, padx=20, sticky="nsew")
         
