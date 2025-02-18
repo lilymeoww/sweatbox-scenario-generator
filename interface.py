@@ -338,7 +338,7 @@ class App(customtkinter.CTk):
         print(f"SYSTEM: FILE WRITTEN TO {fileName}")
         Modal(self,"Sweatbox Generated","Success!")
         print(f"SYSTEM: BYE")
-        self.destroy()
+        #self.destroy()
 
     def updateVFRLabel(self, value) -> None:
         numberOfPlanes = int(self.numberOfPlanesEntry.get(
