@@ -276,39 +276,42 @@ class App(customtkinter.CTk):
         print(f"SYSTEM: {self.fplanErrorsPercentage.get()=}%")
 
         rate = [t.strip() for t in self.arrivalRateEntry.get().split(",") if t]
-        if self.arrivalRateType.get() == "TIME":
-            print("SYSTEM: USING TIME BASED SEP")
-            ...  # processing needed?
-        elif self.arrivalRateType.get() == "MIT":
-            print("SYSTEM: USING MIT")
-            time_delays = []
-            for mit in rate:
-                try:
-                    mit_value = float(mit)
-                    speed = 270  # kts
-                    time_delay = (mit_value / speed) * 60
-                    time_delays.append(time_delay)
-                except ValueError:
-                    print(f"ERROR: Invalid MIT value '{mit}'")
-            rate = time_delays
-        else:
-            print(f"ERROR : {self.arrivalRateType=}")
-            Modal(self,f"Something has gone wrong \nArrival Rate type = {self.arrivalRateType} \nPlease Try again")
+        offsets = []
+        if rate:
+            if self.arrivalRateType.get() == "TIME":
+                print("SYSTEM: USING TIME BASED SEP")
+                ...  # processing needed?
+            elif self.arrivalRateType.get() == "MIT":
+                print("SYSTEM: USING MIT")
+                time_delays = []
+                for mit in rate:
+                    try:
+                        mit_value = float(mit)
+                        speed = 270  # kts
+                        time_delay = (mit_value / speed) * 60
+                        time_delays.append(time_delay)
+                    except ValueError:
+                        print(f"ERROR: Invalid MIT value '{mit}'")
+                rate = time_delays
+            else:
+                print(f"ERROR : {self.arrivalRateType=}")
+                Modal(self,f"Something has gone wrong \nArrival Rate type = {self.arrivalRateType} \nPlease Try again")
 
-        offsets = [rate[0]]
-        for i, r in enumerate(rate[1:]):
-            offsets.append(str(int(offsets[i]) + int(r)))
-        print(f"SYSTEM: {offsets=}")
-        lastPlane = offsets[-1]
-        lengthOfSb = self.sbLengthEntry.get()
-        repetitions = (int(lengthOfSb) // int(lastPlane)) + 1
+            offsets = [rate[0]]
+            for i, r in enumerate(rate[1:]):
+                offsets.append(str(int(offsets[i]) + int(r)))
+            print(f"SYSTEM: {offsets=}")
+            lastPlane = offsets[-1]
+            lengthOfSb = self.sbLengthEntry.get()
+            repetitions = (int(lengthOfSb) // int(lastPlane)) + 1
 
-        extended_offsets = []
-        for _ in range(repetitions):
-            extended_offsets.extend([str(int(offset) + int(extended_offsets[-1]) if extended_offsets else int(offset)) for offset in offsets])
-        offsets = extended_offsets
-        offsets = [offset for offset in offsets if int(offset) <= int(lengthOfSb)]
-        print(f"SYSTEM: {offsets=}")
+            extended_offsets = []
+            for _ in range(repetitions):
+                extended_offsets.extend([str(int(offset) + int(extended_offsets[-1]) if extended_offsets else int(offset)) for offset in offsets])
+            offsets = extended_offsets
+            offsets = [offset for offset in offsets if int(offset) <= int(lengthOfSb)]
+            print(f"SYSTEM: {offsets=}")
+        
         self.sweatboxContents = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots, offsets)
 
