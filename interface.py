@@ -74,9 +74,8 @@ class App(customtkinter.CTk):
             self.mapFrame, corner_radius=12)
         self.mapWidget.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
-        # TODO make Dynamic
-        self.mapWidget.set_position(55.9505, -3.3612)
-        self.mapWidget.set_zoom(15)
+        self.mapWidget.set_position(55.4, -2.75)
+        self.mapWidget.set_zoom(6)
 
         self.planeIconList = []
 
@@ -372,7 +371,13 @@ class App(customtkinter.CTk):
         """
         self.activeAirport = airport
         print(f"SYSTEM: ACTIVE AIRPORT {airport.icao}")
-        # self.mapWidget.set_address("colosseo, rome, italy") TODO - Center map
+        with open(resourcePath("rsc/mapConfig.json")) as positionData:
+            mapConfig = json.load(positionData)
+        lat = mapConfig[airport.icao]["lat"]
+        long = mapConfig[airport.icao]["long"]
+        zoom = mapConfig[airport.icao]["zoom"]
+        self.mapWidget.set_position(float(lat), float(long))
+        self.mapWidget.set_zoom(int(zoom))
 
     def loadAirports(self) -> None:
         """Load airport data from file
