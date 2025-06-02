@@ -400,8 +400,6 @@ class App(customtkinter.CTk):
             self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand)
             markers[stand] = self.mapWidget
 
-#        print("SYSTEM: END OF MARKER CREATION")
-
     def loadAirports(self) -> None:
         """Load airport data from file
         """
