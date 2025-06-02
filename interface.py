@@ -6,7 +6,7 @@ import re
 import json
 from utils import resourcePath, generateSweatboxText, Pilot, Airport, Controller
 import tkintermapview
-from PIL import Image, ImageTk#
+from PIL import Image, ImageTk
 from Modal import Modal
 
 
@@ -372,14 +372,8 @@ class App(customtkinter.CTk):
         self.activeAirport = airport
         print(f"SYSTEM: ACTIVE AIRPORT {airport.icao}")
 
-        with open(resourcePath("rsc/stands.json"))as standMaster:
-            data = json.load(standMaster)
-        stands = data[airport.icao]
-
-        self.mapWidget.delete_all_marker()
-        for stand in stands:
-            selectedStand = stands.get(stand)
-            marker = self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand)
+        used = []
+        self.setMarkers(airport, used)
 
         with open(resourcePath("rsc/mapConfig.json")) as positionData:
             mapConfig = json.load(positionData)
@@ -388,6 +382,25 @@ class App(customtkinter.CTk):
         zoom = mapConfig[airport.icao]["zoom"]
         self.mapWidget.set_position(float(lat), float(long))
         self.mapWidget.set_zoom(int(zoom))
+
+    def setMarkers(self, airport: Airport, used) -> None:
+        """Draws markers for each defined stand
+
+        Args:
+            airport (Airport): New airport
+        """
+        with open(resourcePath("rsc/stands.json"))as standMaster:
+            data = json.load(standMaster)
+        stands = data[airport.icao]
+
+        markers = {}
+        self.mapWidget.delete_all_marker()
+        for stand in stands:
+            selectedStand = stands.get(stand)
+            self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand)
+            markers[stand] = self.mapWidget
+
+        print("H1")
 
     def loadAirports(self) -> None:
         """Load airport data from file
