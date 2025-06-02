@@ -280,6 +280,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     numberOfVfr = int(amount * vfr_factor/100)
 
     pilots = []
+    occupiedStands = []
 
     with open(resourcePath("rsc/stands.json")) as jsonData:
         JSONInjest = json.load(jsonData)
@@ -301,6 +302,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         stand = random.choice(list(stands))
         print(f"SYSTEM: VFR {cs} ASSIGNED TO STAND {stand}")
         selectedStand = stands.get(stand)
+        occupiedStands.append(stand)
         stands.pop(stand)
 
         lat, long, hdg, block = selectedStand[0], selectedStand[1], int(
@@ -345,6 +347,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
 
         selectedStand = stands.get(stand)
+        occupiedStands.append(stand)
         stands.pop(stand)
         for standToRemove in selectedStand[3]:
             if standToRemove in stands:
