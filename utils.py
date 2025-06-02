@@ -60,10 +60,6 @@ class Controller:
 
     def __str__(self):
         return f"PSEUDOPILOT:{self.airport_icao}_M_{self.facility}\nCONTROLLER:{self.name}:{self.frequency}"
-    
-class Stands:
-    def __init__(self, occuipedStands):
-        self.occupiedStands = occuipedStands
 
 class Pilot:
     """Represents a Pilot
