@@ -371,6 +371,16 @@ class App(customtkinter.CTk):
         """
         self.activeAirport = airport
         print(f"SYSTEM: ACTIVE AIRPORT {airport.icao}")
+
+        with open(resourcePath("rsc/stands.json"))as standMaster:
+            data = json.load(standMaster)
+        stands = data[airport.icao]
+
+        self.mapWidget.delete_all_marker()
+        for stand in stands:
+            selectedStand = stands.get(stand)
+            marker = self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand)
+
         with open(resourcePath("rsc/mapConfig.json")) as positionData:
             mapConfig = json.load(positionData)
         lat = mapConfig[airport.icao]["lat"]
