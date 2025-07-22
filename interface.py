@@ -6,7 +6,7 @@ import re
 import json
 from utils import resourcePath, generateSweatboxText, loadStandNums, Pilot, Airport, Controller
 import tkintermapview
-from PIL import Image, ImageTk#
+from PIL import Image, ImageTk
 from Modal import Modal
 
 
@@ -311,10 +311,11 @@ class App(customtkinter.CTk):
             offsets = [offset for offset in offsets if int(offset) <= int(lengthOfSb)]
             print(f"SYSTEM: {offsets=}")
         
-        self.sweatboxContents = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
+        self.sweatboxContents, occupiedStands = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots, offsets)
 
         print(f"SYSTEM: GENERATED SWEATBOX FILE")
+        self.setMarkers(self.activeAirport, occupiedStands)
 
         if self.outputDirectory:
             fileName = filedialog.asksaveasfilename(
@@ -371,6 +372,10 @@ class App(customtkinter.CTk):
         """
         self.activeAirport = airport
         print(f"SYSTEM: ACTIVE AIRPORT {airport.icao}")
+
+        usedStands = []
+        self.setMarkers(airport, usedStands)
+
         with open(resourcePath("rsc/mapConfig.json")) as positionData:
             mapConfig = json.load(positionData)
         lat = mapConfig[airport.icao]["lat"]
@@ -378,6 +383,26 @@ class App(customtkinter.CTk):
         zoom = mapConfig[airport.icao]["zoom"]
         self.mapWidget.set_position(float(lat), float(long))
         self.mapWidget.set_zoom(int(zoom))
+
+    def setMarkers(self, airport: Airport, used) -> None:
+        """Draws markers for each defined stand
+
+        Args:
+            airport (Airport): New airport
+        """
+        with open(resourcePath("rsc/stands.json"))as standMaster:
+            data = json.load(standMaster)
+        stands = data[airport.icao]
+
+        markers = {}
+        self.mapWidget.delete_all_marker()
+        for stand in stands:
+            selectedStand = stands.get(stand)
+            if stand in used:
+                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand)
+            else:
+                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand, marker_color_outside="Light Green", marker_color_circle="Green")
+            markers[stand] = self.mapWidget
 
     def loadAirports(self) -> None:
         """Load airport data from file
