@@ -532,13 +532,13 @@ class App(customtkinter.CTk):
             row=rowCount, column=0, pady=5, sticky="e")
         rmkVar = tk.StringVar(value="none")
         vRadio = customtkinter.CTkRadioButton(
-            newWindow, text="V", variable=rmkVar, value="V")
+            newWindow, text="Voice", variable=rmkVar, value="V")
         vRadio.grid(row=rowCount, column=1, padx=(10, 5), pady=5, sticky="w")
         rRadio = customtkinter.CTkRadioButton(
-            newWindow, text="R", variable=rmkVar, value="R")
+            newWindow, text="Recieve", variable=rmkVar, value="R")
         rRadio.grid(row=rowCount, column=2, padx=(5, 10), pady=5, sticky="w")
         tRadio = customtkinter.CTkRadioButton(
-            newWindow, text="T", variable=rmkVar, value="T")
+            newWindow, text="Text", variable=rmkVar, value="T")
         tRadio.grid(row=rowCount, column=3, padx=(5, 10), pady=5, sticky="w")
         noneRadio = customtkinter.CTkRadioButton(
             newWindow, text="None", variable=rmkVar, value="none")
