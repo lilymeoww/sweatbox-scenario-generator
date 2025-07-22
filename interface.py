@@ -411,7 +411,7 @@ class App(customtkinter.CTk):
             alt = self.activeAirport.altitude
             dep = self.activeAirport.icao
             sq = f"{len(self.manualPilots):04}"
-            rules = str(rulesVar)
+            rules = str(rulesVar.get())
             acType = typeEntry.get()
             cruiseLvl = cruiseLvlEntry.get()
             dest = destEntry.get()
