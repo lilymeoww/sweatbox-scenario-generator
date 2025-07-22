@@ -311,10 +311,11 @@ class App(customtkinter.CTk):
             offsets = [offset for offset in offsets if int(offset) <= int(lengthOfSb)]
             print(f"SYSTEM: {offsets=}")
         
-        self.sweatboxContents = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
+        self.sweatboxContents, occupiedStands = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots, offsets)
 
         print(f"SYSTEM: GENERATED SWEATBOX FILE")
+        self.setMarkers(self.activeAirport, occupiedStands)
 
         if self.outputDirectory:
             fileName = filedialog.asksaveasfilename(
@@ -372,8 +373,8 @@ class App(customtkinter.CTk):
         self.activeAirport = airport
         print(f"SYSTEM: ACTIVE AIRPORT {airport.icao}")
 
-        used = []
-        self.setMarkers(airport, used)
+        usedStands = []
+        self.setMarkers(airport, usedStands)
 
         with open(resourcePath("rsc/mapConfig.json")) as positionData:
             mapConfig = json.load(positionData)
@@ -397,7 +398,10 @@ class App(customtkinter.CTk):
         self.mapWidget.delete_all_marker()
         for stand in stands:
             selectedStand = stands.get(stand)
-            self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand)
+            if stand in used:
+                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand)
+            else:
+                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand, marker_color_outside="Light Green", marker_color_circle="Green")
             markers[stand] = self.mapWidget
 
     def loadAirports(self) -> None:

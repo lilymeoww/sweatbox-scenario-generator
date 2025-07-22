@@ -210,7 +210,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
     for controller in controllers:
         scenario.add_controller(controller)
 
-    pilots = generate_random_plans(autoPilots, airport, vfrP,
+    pilots, occupiedStands = generate_random_plans(autoPilots, airport, vfrP,
                                    invalidRouteP, invalidLevelP, fplanErrorsP)
     pilots += generate_arrival_plans(airport, arrivalOffsets)
     for pilot in pilots:
@@ -219,7 +219,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
     for pilot in manualPilots:
         scenario.add_pilot(pilot)
 
-    return scenario.generate_scenario()
+    return scenario.generate_scenario(), occupiedStands
 
 
 def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
@@ -383,7 +383,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
                             depAirport, sq, rules, acType, crz, dest, rmk, rte, ""))
 
-    return pilots
+    return pilots, occupiedStands
 
 
 def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str, str]:
