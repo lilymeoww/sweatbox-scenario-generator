@@ -180,3 +180,4 @@ cython_debug/
 testsb.txt
 sweatbox_generator.config
 sweatbox*.txt
+build.bat
