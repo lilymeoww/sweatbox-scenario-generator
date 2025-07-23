@@ -4,7 +4,7 @@ import customtkinter
 import os
 import re
 import json
-from utils import resourcePath, generateSweatboxText, Pilot, Airport, Controller
+from utils import resourcePath, generateSweatboxText, loadStand, loadStandNums, Pilot, Airport, Controller
 import tkintermapview
 from PIL import Image, ImageTk
 from Modal import Modal
@@ -24,7 +24,7 @@ class App(customtkinter.CTk):
         # configure window
         self.title("Sweatbox Scenario Generator")
         self.geometry(f"{1100}x{650}")
-
+    
         self.vfrPercentage = tk.IntVar()
         self.invalidRoutePercentage = tk.IntVar()
         self.invalidLevelPercentage = tk.IntVar()
@@ -390,9 +390,7 @@ class App(customtkinter.CTk):
         Args:
             airport (Airport): New airport
         """
-        with open(resourcePath("rsc/stands.json"))as standMaster:
-            data = json.load(standMaster)
-        stands = data[airport.icao]
+        stands = loadStand(airport.icao)
 
         markers = {}
         self.mapWidget.delete_all_marker()
@@ -429,17 +427,14 @@ class App(customtkinter.CTk):
         """
         newWindow = customtkinter.CTkToplevel(self)
         newWindow.title("Add Manual Pilot")
-        newWindow.geometry("350x500")
-
-        def save_pilot() -> None:
+        newWindow.geometry("650x550")
+        
+        def save_pilot(lat, long, hdg) -> None:
             callsign = callsignEntry.get()
-            lat = latEntry.get()
-            long = longEntry.get()
-            alt = self.currentAirport.altitude
-            hdg = int(hdgEntry.get())
-            dep = self.currentAirport.icao
+            alt = self.activeAirport.altitude
+            dep = self.activeAirport.icao
             sq = f"{len(self.manualPilots):04}"
-            rules = str(rulesVar)
+            rules = str(rulesVar.get())
             acType = typeEntry.get()
             cruiseLvl = cruiseLvlEntry.get()
             dest = destEntry.get()
@@ -451,78 +446,171 @@ class App(customtkinter.CTk):
             self.manualPilots.append(pilot)
             # newWindow.destroy()
 
+        def set_position(position, heading, standData) -> None:
+            print(rmkVar.get())
+            if position == "C":
+                lat = latEntry.get()
+                long = longEntry.get()
+            else:
+                stand = standNumber.get()
+                lat = standData[stand][0]
+                long = standData[stand][1]
+
+            if heading == "C":
+                hdg = int(hdgEntry.get())
+            else:
+                hdg = standData[stand][2]
+            save_pilot(lat, long, hdg)
+
+        rowCount = 0
         customtkinter.CTkLabel(newWindow, text="Enter Pilot Details", font=customtkinter.CTkFont(
-            size=15, weight="bold")).grid(row=0, column=0, columnspan=2, pady=10)
+            size=15, weight="bold")).grid(row=rowCount, column=0, columnspan=2, pady=10)
+        rowCount += 1
 
         customtkinter.CTkLabel(newWindow, text="Callsign").grid(
-            row=1, column=0, pady=5, sticky="e")
+            row=rowCount, column=0, pady=5, sticky="e")
         callsignEntry = customtkinter.CTkEntry(newWindow)
-        callsignEntry.grid(row=1, column=1, pady=5, padx=5)
+        callsignEntry.grid(row=rowCount, column=1, pady=5, padx=5)
+        rowCount += 1
 
-        customtkinter.CTkLabel(newWindow, text="Latitude").grid(
-            row=2, column=0, pady=5, sticky="e")
+        customtkinter.CTkLabel(newWindow, text="Position").grid(
+            row=rowCount, column=0, pady=5, sticky="e")
+        positionVar = tk.StringVar(value="C")
+        coordsRadio = customtkinter.CTkRadioButton(
+            newWindow, text="Coordinates", variable=positionVar, value="C")
+        coordsRadio.grid(row=rowCount, column=1, padx=(10, 5), pady=5, sticky="w")
+        dropdownRadio = customtkinter.CTkRadioButton(
+            newWindow, text="Choose stand from list", variable=positionVar, value="D")
+        dropdownRadio.grid(row=rowCount, column=2, padx=(5, 10), pady=5, sticky="w")
+        rowCount += 1
+
+        latLabel = customtkinter.CTkLabel(newWindow, text="Latitude")
         latEntry = customtkinter.CTkEntry(newWindow)
-        latEntry.grid(row=2, column=1, pady=5, padx=5)
-
-        customtkinter.CTkLabel(newWindow, text="Longitude").grid(
-            row=3, column=0, pady=5, sticky="e")
+        longLabel = customtkinter.CTkLabel(newWindow, text="Longitude")
         longEntry = customtkinter.CTkEntry(newWindow)
-        longEntry.grid(row=3, column=1, pady=5, padx=5)
 
-        customtkinter.CTkLabel(newWindow, text="Heading").grid(
-            row=4, column=0, pady=5, sticky="e")
+        standNumbers, standData = loadStandNums(self.activeAirport)
+        standLabel = customtkinter.CTkLabel(newWindow, text="Stand Number")
+        standNumber = tk.StringVar(value=standNumbers[0])
+        standDropdown = customtkinter.CTkOptionMenu(newWindow, variable=standNumber, values=standNumbers)
+
+        headingSelLabel = customtkinter.CTkLabel(newWindow, text="Heading Type")
+        headingSel = tk.StringVar(value="S")
+        headingStandardRadio = customtkinter.CTkRadioButton(
+            newWindow, text="Standard (Rec)", variable=headingSel, value="S")
+        dropdownRadio = customtkinter.CTkRadioButton(
+            newWindow, text="Custom", variable=headingSel, value="C")
+
+        latLabel.grid(row=rowCount, column=0, pady=5, sticky="e")
+        latEntry.grid(row=rowCount, column=1, pady=5, padx=5)
+        rowCount += 1
+        longLabel.grid(row=rowCount, column=0, pady=5, sticky="e")
+        longEntry.grid(row=rowCount, column=1, pady=5, padx=5)
+        rowCount += 1
+        standLabel.grid(row=rowCount-2, column=0, pady=5, sticky="e")
+        standDropdown.grid(row=rowCount-2, column=1, pady=5, padx=5)
+        rowCount += 1
+
+        headingSelLabel.grid(row=rowCount, column=0, pady=5, sticky="e")
+        headingStandardRadio.grid(row=rowCount, column=1, padx=(10, 5), pady=5, sticky="w")
+        dropdownRadio.grid(row=rowCount, column=2, padx=(5, 10), pady=5, sticky="w")
+        rowCount += 1
+
+        headingLabel = customtkinter.CTkLabel(newWindow, text="Heading")
         hdgEntry = customtkinter.CTkEntry(newWindow)
-        hdgEntry.grid(row=4, column=1, pady=5, padx=5)
+        headingLabel.grid(row=rowCount, column=0, pady=5, sticky="e")
+        hdgEntry.grid(row=rowCount, column=1, pady=5, padx=5)
+        rowCount += 1
 
         customtkinter.CTkLabel(newWindow, text="Flight Rules").grid(
-            row=5, column=0, pady=5, sticky="e")
+            row=rowCount, column=0, pady=5, sticky="e")
         rulesVar = tk.StringVar(value="I")
         ifrRadio = customtkinter.CTkRadioButton(
             newWindow, text="IFR", variable=rulesVar, value="I")
-        ifrRadio.grid(row=5, column=1, padx=(10, 5), pady=5, sticky="w")
+        ifrRadio.grid(row=rowCount, column=1, padx=(10, 5), pady=5, sticky="w")
         vfrRadio = customtkinter.CTkRadioButton(
             newWindow, text="VFR", variable=rulesVar, value="V")
-        vfrRadio.grid(row=5, column=2, padx=(5, 10), pady=5, sticky="w")
+        vfrRadio.grid(row=rowCount, column=2, padx=(5, 10), pady=5, sticky="w")
+        rowCount += 1
 
         customtkinter.CTkLabel(newWindow, text="Aircraft Type").grid(
-            row=6, column=0, pady=5, sticky="e")
+            row=rowCount, column=0, pady=5, sticky="e")
         typeEntry = customtkinter.CTkEntry(newWindow)
-        typeEntry.grid(row=6, column=1, pady=5, padx=5)
+        typeEntry.grid(row=rowCount, column=1, pady=5, padx=5)
+        rowCount += 1
 
         customtkinter.CTkLabel(
-            newWindow, text="Cruise Level (in ft)").grid(row=7, column=0, pady=5, sticky="e")
+            newWindow, text="Cruise Level (in ft)").grid(row=rowCount, column=0, pady=5, sticky="e")
         cruiseLvlEntry = customtkinter.CTkEntry(newWindow)
-        cruiseLvlEntry.grid(row=7, column=1, pady=5, padx=5)
+        cruiseLvlEntry.grid(row=rowCount, column=1, pady=5, padx=5)
+        rowCount += 1
 
         customtkinter.CTkLabel(
-            newWindow, text="Destination (ICAO)").grid(row=8, column=0, pady=5, sticky="e")
+            newWindow, text="Destination (ICAO)").grid(row=rowCount, column=0, pady=5, sticky="e")
         destEntry = customtkinter.CTkEntry(newWindow)
-        destEntry.grid(row=8, column=1, pady=5, padx=5)
+        destEntry.grid(row=rowCount, column=1, pady=5, padx=5)
+        rowCount += 1
 
         customtkinter.CTkLabel(newWindow, text="Voice Rules").grid(
-            row=9, column=0, pady=5, sticky="e")
+            row=rowCount, column=0, pady=5, sticky="e")
         rmkVar = tk.StringVar(value="none")
         vRadio = customtkinter.CTkRadioButton(
-            newWindow, text="V", variable=rmkVar, value="V")
-        vRadio.grid(row=9, column=1, padx=(10, 5), pady=5, sticky="w")
+            newWindow, text="Voice", variable=rmkVar, value="V")
+        vRadio.grid(row=rowCount, column=1, padx=(10, 5), pady=5, sticky="w")
         rRadio = customtkinter.CTkRadioButton(
-            newWindow, text="R", variable=rmkVar, value="R")
-        rRadio.grid(row=9, column=2, padx=(5, 10), pady=5, sticky="w")
+            newWindow, text="Recieve", variable=rmkVar, value="R")
+        rRadio.grid(row=rowCount, column=2, padx=(5, 10), pady=5, sticky="w")
         tRadio = customtkinter.CTkRadioButton(
-            newWindow, text="T", variable=rmkVar, value="T")
-        tRadio.grid(row=9, column=3, padx=(5, 10), pady=5, sticky="w")
+            newWindow, text="Text", variable=rmkVar, value="T")
+        tRadio.grid(row=rowCount, column=3, padx=(5, 10), pady=5, sticky="w")
         noneRadio = customtkinter.CTkRadioButton(
             newWindow, text="None", variable=rmkVar, value="none")
-        noneRadio.grid(row=9, column=4, padx=(5, 10), pady=5, sticky="w")
+        noneRadio.grid(row=rowCount, column=4, padx=(5, 10), pady=5, sticky="w")
+        rowCount += 1
 
         customtkinter.CTkLabel(newWindow, text="Route").grid(
-            row=10, column=0, pady=5, sticky="e")
+            row=rowCount, column=0, pady=5, sticky="e")
         routeEntry = customtkinter.CTkEntry(newWindow)
-        routeEntry.grid(row=10, column=1, pady=5, padx=5)
+        routeEntry.grid(row=rowCount, column=1, pady=5, padx=5)
+        rowCount += 1
 
         save_button = customtkinter.CTkButton(
-            newWindow, text="Add pilot", command=save_pilot)
-        save_button.grid(row=11, column=0, columnspan=2, pady=20)
+            newWindow, text="Add pilot", command=lambda: set_position(positionVar.get(), headingSel.get(), standData))
+        save_button.grid(row=rowCount, column=0, columnspan=2, pady=20)
+        rowCount += 1
+
+        def update_position_fields(*args):
+            if positionVar.get() == "C":
+                latLabel.grid(column=0, pady=5, sticky="e")
+                latEntry.grid(column=1, pady=5, padx=5)
+                longLabel.grid(column=0, pady=5, sticky="e")
+                longEntry.grid(column=1, pady=5, padx=5)
+                standLabel.grid_remove()
+                standDropdown.grid_remove()
+                headingSelLabel.grid_remove()
+                headingStandardRadio.grid_remove()
+                dropdownRadio.grid_remove()
+            else:
+                latLabel.grid_remove()
+                latEntry.grid_remove()
+                longLabel.grid_remove()
+                longEntry.grid_remove()
+                standLabel.grid(column=0, pady=5, sticky="e")
+                standDropdown.grid(column=1, pady=5, padx=5)
+                headingSelLabel.grid(column=0, pady=5, sticky="e")
+                headingStandardRadio.grid(column=1, padx=(10, 5), pady=5, sticky="w")
+                dropdownRadio.grid(column=2, padx=(5, 10), pady=5, sticky="w")
+                if headingSel.get() == "S":
+
+                    headingLabel.grid_remove()
+                    hdgEntry.grid_remove()
+                else:
+                    headingLabel.grid(column=0, pady=5, sticky="e")
+                    hdgEntry.grid(column=1, pady=5, padx=5)
+
+        positionVar.trace_add("write", update_position_fields)
+        headingSel.trace_add("write", update_position_fields)
+        update_position_fields()
 
     def addControllers(self) -> None:
         controllerWindow = customtkinter.CTkToplevel(self)
@@ -589,7 +677,7 @@ class App(customtkinter.CTk):
         self.planeIconList.append(planeIcon)
         self.mapWidget.set_marker(
             float(lat), float(long), icon=planeIcon)
-
+        
 
 if __name__ == "__main__":
     app = App()

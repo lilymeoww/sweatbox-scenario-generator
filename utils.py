@@ -282,9 +282,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     pilots = []
     occupiedStands = []
 
-    with open(resourcePath("rsc/stands.json")) as jsonData:
-        JSONInjest = json.load(jsonData)
-        stands = JSONInjest.get(dep.icao)
+    stands = loadStand(dep.icao)
 
     with open(resourcePath("rsc/callsignsVFR.json")) as jsonData:
         JSONInjest = json.load(jsonData)
@@ -418,6 +416,38 @@ def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str,
     except FileNotFoundError:
         print("ERROR : file not found.")
     return f"{departure} {arrival}", "E"
+
+def loadStand(icao) -> dict:
+    """Loads the stand information for a given airport
+
+    Args:
+        airport (Airport): The airport object containing the ICAO code
+
+    Returns:
+        dict: Dictionary of stand information for the airport
+    """
+    with open(resourcePath("rsc/stands.json")) as jsonData:
+        JSONInjest = json.load(jsonData)
+    return JSONInjest.get(icao)
+
+def loadStandNums(icao) -> list:
+    """Loads the stand numbers for a given airport
+
+    Args:
+        airport (Airport): The airport object containing the ICAO code
+
+    Returns:
+        list: List of stand numbers for the airport
+    """
+    stands = loadStand(icao.icao)
+
+    standNums = []
+    counter = 0
+    for stand in stands:
+        standNums.append(stand)
+        counter += 1
+    
+    return standNums, stands
 
 
 if __name__ == "__main__":
