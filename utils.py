@@ -347,10 +347,14 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         selectedStand = stands.get(stand)
         occupiedStands.append(stand)
         stands.pop(stand)
-        for standToRemove in selectedStand[3]:
-            if standToRemove in stands:
-                stands.pop(standToRemove)
-            print(f"SYSTEM: STAND {standToRemove} REMOVED")
+        if(stands != {}):
+            for standToRemove in selectedStand[3]:
+                if standToRemove in stands:
+                    stands.pop(standToRemove)
+                print(f"SYSTEM: STAND {standToRemove} REMOVED")
+        else:
+            print(f"SYSTEM: NO MORE STANDS AVAILABLE | {current_sq-1} AIRCRAFT GENERATED")
+            return pilots, occupiedStands
 
         lat, long, hdg = selectedStand[0], selectedStand[1], int(
             ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
