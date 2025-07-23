@@ -394,7 +394,7 @@ class App(customtkinter.CTk):
 
         markers = {}
         self.mapWidget.delete_all_marker()
-        image = Image.open(resourcePath("icons8-plane-50.png")) # Plane icon working in dev, but not when built.
+        image = Image.open(resourcePath("icons8-plane-50.png"))
         image = image.resize((20, 20))
         for stand in stands:
             selectedStand = stands.get(stand)
