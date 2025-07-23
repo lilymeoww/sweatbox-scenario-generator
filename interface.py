@@ -427,7 +427,7 @@ class App(customtkinter.CTk):
         """
         newWindow = customtkinter.CTkToplevel(self)
         newWindow.title("Add Manual Pilot")
-        newWindow.geometry("375x550")
+        newWindow.geometry("650x550")
         
         def save_pilot(lat, long, hdg) -> None:
             callsign = callsignEntry.get()
@@ -497,7 +497,7 @@ class App(customtkinter.CTk):
         headingSelLabel = customtkinter.CTkLabel(newWindow, text="Heading Type")
         headingSel = tk.StringVar(value="S")
         headingStandardRadio = customtkinter.CTkRadioButton(
-            newWindow, text="Standard (Recommended)", variable=headingSel, value="S")
+            newWindow, text="Standard (Rec)", variable=headingSel, value="S")
         dropdownRadio = customtkinter.CTkRadioButton(
             newWindow, text="Custom", variable=headingSel, value="C")
 
