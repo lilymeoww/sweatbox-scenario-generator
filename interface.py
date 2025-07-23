@@ -477,10 +477,10 @@ class App(customtkinter.CTk):
             row=rowCount, column=0, pady=5, sticky="e")
         positionVar = tk.StringVar(value="C")
         coordsRadio = customtkinter.CTkRadioButton(
-            newWindow, text="Cordinates", variable=positionVar, value="C")
+            newWindow, text="Coordinates", variable=positionVar, value="C")
         coordsRadio.grid(row=rowCount, column=1, padx=(10, 5), pady=5, sticky="w")
         dropdownRadio = customtkinter.CTkRadioButton(
-            newWindow, text="Dropdown", variable=positionVar, value="D")
+            newWindow, text="Choose stand from list", variable=positionVar, value="D")
         dropdownRadio.grid(row=rowCount, column=2, padx=(5, 10), pady=5, sticky="w")
         rowCount += 1
 
@@ -495,9 +495,9 @@ class App(customtkinter.CTk):
         standDropdown = customtkinter.CTkOptionMenu(newWindow, variable=standNumber, values=standNumbers)
 
         headingSelLabel = customtkinter.CTkLabel(newWindow, text="Heading Type")
-        headingSel = tk.StringVar(value="C")
+        headingSel = tk.StringVar(value="S")
         headingStandardRadio = customtkinter.CTkRadioButton(
-            newWindow, text="Standard", variable=headingSel, value="S")
+            newWindow, text="Standard (Recommended)", variable=headingSel, value="S")
         dropdownRadio = customtkinter.CTkRadioButton(
             newWindow, text="Custom", variable=headingSel, value="C")
 
