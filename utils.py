@@ -327,16 +327,24 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     types = JSONInjest.get("callsigns")
 
     for _ in range(amount - numberOfVfr):
+
         current_sq += 1
         sq = f"{current_sq:04}"
         depAirport = dep.icao
 
-        chosenCallsign = random.choice(list(callsigns))
+        dest, rte, crz = get_route(depAirport, incorrect_factor)
+        print(f"SYSTEM: IFR {dest} | {rte}, {crz}")
+
+        airlines = []
+        for airline, destinations in callsigns.items():
+            if dest in destinations.split(","):
+                airlines.append(airline)
+        print(airlines)
+
+        chosenCallsign = random.choice(list(airlines))
         cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
             string.ascii_uppercase) + random.choice(string.ascii_uppercase)
         rules = "I"
-        possDest = callsigns[chosenCallsign].split(",")
-        dest = random.choice(possDest)
 
         possTypes = types[chosenCallsign].split(",")
         acType = random.choice(possTypes)
@@ -359,7 +367,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         lat, long, hdg = selectedStand[0], selectedStand[1], int(
             ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
         rmk = "v"
-        rte, crz = get_route(dep.icao, dest, incorrect_factor)
+        
         if random.randint(1, 100) <= level_factor:
 
             with open(resourcePath("rsc/invalidAltitudes.json")) as jsonData:
@@ -388,7 +396,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     return pilots, occupiedStands
 
 
-def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str, str]:
+def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
     """Gets a route between 2 airports, with a chance of the route being invalid
 
     Args:
@@ -405,17 +413,20 @@ def get_route(departure: str, arrival: str, incorrect_factor: int) -> tuple[str,
             with open(resourcePath("rsc/invalidRoutes.json")) as jsonData:
                 JSONInjest = json.load(jsonData)
             routes = JSONInjest.get(departure)
-            extracted = routes.get(arrival)
-            route = random.choice(extracted).split(",")
+            
+            desitnation, route = random.choice(list(routes.items()))
+            print(random.choice(list(route)))
+            route = random.choice(list(route)).split(",")
 
         else:
             with open(resourcePath("rsc/routes.json")) as jsonData:
                 JSONInjest = json.load(jsonData)
             routes = JSONInjest.get(departure)
-            extracted = routes.get(arrival)
-            route = extracted.split(",")
+            
+            desitnation, route = random.choice(list(routes.items()))
+            route = route.split(",")
 
-        return route[0], route[1]
+        return desitnation, route[0], route[1]
 
     except FileNotFoundError:
         print("ERROR : file not found.")
