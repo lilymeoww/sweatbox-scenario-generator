@@ -4,7 +4,7 @@ import customtkinter
 import os
 import re
 import json
-from utils import resourcePath, generateSweatboxText, loadStandNums, Pilot, Airport, Controller
+from utils import resourcePath, generateSweatboxText, loadStand, loadStandNums, Pilot, Airport, Controller
 import tkintermapview
 from PIL import Image, ImageTk
 from Modal import Modal
@@ -390,9 +390,7 @@ class App(customtkinter.CTk):
         Args:
             airport (Airport): New airport
         """
-        with open(resourcePath("rsc/stands.json"))as standMaster:
-            data = json.load(standMaster)
-        stands = data[airport.icao]
+        stands = loadStand(airport.icao)
 
         markers = {}
         self.mapWidget.delete_all_marker()
