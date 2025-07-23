@@ -333,13 +333,11 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         depAirport = dep.icao
 
         dest, rte, crz = get_route(depAirport, incorrect_factor)
-        print(f"SYSTEM: IFR {dest} | {rte}, {crz}")
 
         airlines = []
         for airline, destinations in callsigns.items():
             if dest in destinations.split(","):
                 airlines.append(airline)
-        print(airlines)
 
         chosenCallsign = random.choice(list(airlines))
         cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
@@ -367,7 +365,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         lat, long, hdg = selectedStand[0], selectedStand[1], int(
             ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
         rmk = "v"
-        
+
         if random.randint(1, 100) <= level_factor:
 
             with open(resourcePath("rsc/invalidAltitudes.json")) as jsonData:
