@@ -9,7 +9,6 @@ import tkintermapview
 from PIL import Image, ImageTk
 from Modal import Modal
 
-
 class App(customtkinter.CTk):
     """Contains methods for the interface and generation of the sweatbox"""
 
