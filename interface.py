@@ -394,10 +394,14 @@ class App(customtkinter.CTk):
 
         markers = {}
         self.mapWidget.delete_all_marker()
+        image = Image.open(resourcePath("icons8-plane-50.png")) # Plane icon working in dev, but not when built.
+        image = image.resize((20, 20))
         for stand in stands:
             selectedStand = stands.get(stand)
             if stand in used:
-                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand)
+                planeIcon = ImageTk.PhotoImage(image.rotate(90 - int(stands[stand][2])))
+                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand, icon=planeIcon)
+                #self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand) # Original red markers
             else:
                 self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand, marker_color_outside="Light Green", marker_color_circle="Green")
             markers[stand] = self.mapWidget
