@@ -53,7 +53,7 @@ class App(customtkinter.CTk):
         self.airportSelectFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
         self.airportSelectFrame.grid(
-            row=0, column=0, rowspan=4, sticky="nsew", padx=5, pady=5)
+            row=0, column=0, rowspan=1, sticky="nsew", padx=5, pady=5)
         self.airportSelectFrame.grid_rowconfigure(3, weight=1)
         self.airportSelectFrame.grid_columnconfigure(0, weight=1)
 
@@ -62,6 +62,17 @@ class App(customtkinter.CTk):
         airportSelectLabel.grid(row=0, column=0, padx=20, pady=(20, 10))
 
         self.placeAirportSelect()
+
+        self.selectedControllersFrame = customtkinter.CTkScrollableFrame(
+            self, corner_radius=12)
+        self.selectedControllersFrame.grid(
+            row=1, column=0, rowspan=1, sticky="nsew", padx=5, pady=5)
+        self.selectedControllersFrame.grid_rowconfigure(3, weight=1)
+        self.selectedControllersFrame.grid_columnconfigure(0, weight=1)
+
+        selectedControllersLabel = customtkinter.CTkLabel(
+            self.selectedControllersFrame, text="Currently selected controllers", font=customtkinter.CTkFont(size=10, weight="bold"))
+        selectedControllersLabel.grid(row=0, column=0, padx=20, pady=(20, 10))
 
         self.mapFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
@@ -191,7 +202,7 @@ class App(customtkinter.CTk):
             self.airportSelectFrame, variable=airportVar, values=list(self.selectableAirports.keys()), command=lambda _: self.switchAirport(self.selectableAirports[airportVar.get()]["airport"]))
         airportDropdown.grid(row=1, column=0, padx=20, pady=10)
 
-        customtkinter.CTkButton(self.airportSelectFrame, text="Test", command=lambda: Modal(self,"This is a test modal","Success")).grid(row=2, column=0, pady=10)
+        customtkinter.CTkButton(self.airportSelectFrame, text="Test", command=lambda: Modal(self,"This is a test modal :3","Success")).grid(row=2, column=0, pady=10)
 
     def getSectorFile(self) -> str:
         """Get the location of the sectorfile
