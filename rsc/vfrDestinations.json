@@ -1,0 +1,31 @@
+{
+    "EGCC": [
+        "EGCB",
+        "EGNH",
+        "EGCM",
+        "EGCJ",
+        "EGCK",
+        "EGBM"
+    ],
+    "EGLL": [
+        "EGLW"
+    ],
+    "EGPH": [
+        "EGPT", 
+        "EGPN", 
+        "EGPG",
+        "EGPF",
+        "EGPD",
+        "EGNT"
+    ],
+    "EGSS": [
+        "EGSC",
+        "EGMA",
+        "EGSU",
+        "EGSH",
+        "EGMC",
+        "EGKR",
+        "EGKB"
+    ]
+
+}

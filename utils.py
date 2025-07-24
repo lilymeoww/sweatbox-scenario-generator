@@ -297,15 +297,23 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         JSONInjest = json.load(jsonData)
     callsigns = JSONInjest.get("callsigns")
 
+    with open(resourcePath("rsc/vfrDestinations.json")) as jsonData:
+        JSONInjest = json.load(jsonData)
+    possDest = JSONInjest.get(dep.icao)
+
     current_sq = 0
     for _ in range(numberOfVfr):
         current_sq += 1
         cs = random.choice(list(callsigns))
-        callsigns.pop(cs, None)
         rules = "V"
-        dest = random.choice(
-            ["EGPF", "EGPB", "EGNX", "EGPC", "EGAA", "EGPH", "EGLK", "EGLF", "EGMA", "EGFF"])
-        ac_type = random.choice(["P28A", "C172", "C152", "DA42", "SR22"])
+        dest = random.choice(possDest)
+        ac_type = random.choice(callsigns[cs].split(","))
+        callsigns.pop(cs, None)
+
+        if(callsigns == {}):
+            print(f"SYSTEM: NO MORE CALLSIGNS AVAILABLE | {current_sq} AIRCRAFT GENERATED")
+            break
+
         stand = random.choice(list(stands))
         print(f"SYSTEM: VFR {cs} ASSIGNED TO STAND {stand}")
         selectedStand = stands.get(stand)
