@@ -63,7 +63,7 @@ class App(customtkinter.CTk):
 
         self.placeAirportSelect()
 
-        self.flightDataFrame = customtkinter.CTkFrame(
+        self.flightDataFrame = customtkinter.CTkScrollableFrame(
             self, corner_radius=12)
         self.flightDataFrame.grid(
             row=2, column=0, rowspan=4, sticky="nsew", padx=5, pady=5)
@@ -71,7 +71,7 @@ class App(customtkinter.CTk):
         self.flightDataFrame.grid_columnconfigure(0, weight=1)
 
         flightDataHeaderLablel = customtkinter.CTkLabel(
-            self.flightDataFrame, text="Generated Flights", font=customtkinter.CTkFont(size=20, weight="bold"))
+            self.flightDataFrame, text="Generated Aircraft", font=customtkinter.CTkFont(size=15, weight="bold"))
         flightDataHeaderLablel.grid(row=0, column=0, padx=20, pady=(20, 10))
         
         self.placeFlightData("")
@@ -367,7 +367,6 @@ class App(customtkinter.CTk):
             return int(match.group(1)) if match else 0
 
         flightData.sort(key=stand_sort_key)
-
         aircraftDataString = ""
         for aircraft in flightData:
             aircraftDataString += f"Stand {aircraft.stand}: {aircraft.cs}, {aircraft.ac_type}\n"
@@ -418,6 +417,8 @@ class App(customtkinter.CTk):
         zoom = mapConfig[airport.icao]["zoom"]
         self.mapWidget.set_position(float(lat), float(long))
         self.mapWidget.set_zoom(int(zoom))
+
+        #self.updateFlightData([""]) # TODO: Clear list of generated aircraft when chainging airport.
 
     def displayflightData(self, marker, aircraftData) -> None:
         pos = 0
