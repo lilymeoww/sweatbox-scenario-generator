@@ -256,7 +256,7 @@ def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
         pseudoRoute = f"{" ".join(arrivalRoutes[arrival.icao])} CF24 ILS24"
         levelByFix = "CF24"
         levelAtFix = "2500"
-        stand = "None"
+        stand = "0" # TODO: Is this the best way to handle this?
 
         pilot = Pilot(cs, lat, long, stand, alt, heading, dep, sq,
                       rules, actype, cruiseLevel, dest, rmk, route, pseudoRoute, "180", offset, levelByFix, levelAtFix,owner="EGPH")
@@ -334,7 +334,6 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         crz = (500 * random.randint(1, 3)) + 1000
         rmk = "v"
         rte = "VFR"
-        stand = "None"
         pilots.append(Pilot(cs, lat, long, stand, dep.altitude, hdg,
                       dep.icao, sq, rules, ac_type, crz, dest, rmk, rte, ""))
 
@@ -382,8 +381,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             print(f"SYSTEM: NO MORE STANDS AVAILABLE | {current_sq-1} AIRCRAFT GENERATED")
             return pilots, occupiedStands
 
-        lat, long, hdg = selectedStand[0], selectedStand[1], int(
-            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
+        lat, long, hdg = selectedStand[0], selectedStand[1], convertHeading(selectedStand[2])
         rmk = "v"
 
         if random.randint(1, 100) <= level_factor:
@@ -449,6 +447,9 @@ def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
     except FileNotFoundError:
         print("ERROR : file not found.")
     return f"{departure}", "E"
+
+def convertHeading(hdg) -> int:
+    return int(((int(hdg) * 2.88) + 0.5)) << 2
 
 def loadStand(icao) -> dict:
     """Loads the stand information for a given airport

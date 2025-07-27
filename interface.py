@@ -4,7 +4,7 @@ import customtkinter
 import os
 import re
 import json
-from utils import resourcePath, generateSweatboxText, loadStand, loadStandNums, Pilot, Airport, Controller
+from utils import resourcePath, generateSweatboxText, loadStand, loadStandNums, convertHeading, Pilot, Airport, Controller
 import tkintermapview
 from PIL import Image, ImageTk
 from Modal import Modal
@@ -71,7 +71,7 @@ class App(customtkinter.CTk):
         self.flightDataFrame.grid_columnconfigure(0, weight=1)
 
         flightDataHeaderLablel = customtkinter.CTkLabel(
-            self.flightDataFrame, text="Generated Aircraft", font=customtkinter.CTkFont(size=15, weight="bold"))
+            self.flightDataFrame, text="Current Aircraft", font=customtkinter.CTkFont(size=15, weight="bold"))
         flightDataHeaderLablel.grid(row=0, column=0, padx=20, pady=(20, 10))
         
         self.placeFlightData("")
@@ -496,10 +496,11 @@ class App(customtkinter.CTk):
         newWindow.title("Add Manual Pilot")
         newWindow.geometry("650x550")
         
-        def save_pilot(lat, long, hdg) -> None:
+        def save_pilot(lat, long, hdg, stand) -> None:
             callsign = callsignEntry.get().upper()
             alt = self.activeAirport.altitude
             dep = self.activeAirport.icao
+            hdg = convertHeading(hdg)
             sq = f"{len(self.manualPilots):04}"
             rules = str(rulesVar.get())
             acType = typeEntry.get().upper()
@@ -508,13 +509,14 @@ class App(customtkinter.CTk):
             rmk = rmkVar.get().upper()
             route = routeEntry.get().upper()
 
-            pilot = Pilot(callsign, lat, long, alt, hdg, dep, sq,
+            pilot = Pilot(callsign, lat, long, stand, alt, hdg, dep, sq,
                           rules, acType, cruiseLvl, dest, rmk, route, route)
             self.manualPilots.append(pilot)
+            self.setMarkers(self.activeAirport, usedStands, self.manualPilots)
+            self.updateFlightData(self.manualPilots)
             newWindow.destroy()
 
         def set_position(position, heading, standData, usedStands) -> None:
-            print(rmkVar.get())
             if position == "C":
                 lat = latEntry.get()
                 long = longEntry.get()
@@ -523,13 +525,13 @@ class App(customtkinter.CTk):
                 lat = standData[stand][0]
                 long = standData[stand][1]
                 usedStands.append(stand)
-                self.setMarkers(self.activeAirport, usedStands)
+                #self.setMarkers(self.activeAirport, usedStands, self.manualPilots)
 
             if heading == "C":
                 hdg = int(hdgEntry.get())
             else:
                 hdg = standData[stand][2]
-            save_pilot(lat, long, hdg)
+            save_pilot(lat, long, hdg, stand)
 
         rowCount = 0
         customtkinter.CTkLabel(newWindow, text="Enter Pilot Details", font=customtkinter.CTkFont(
