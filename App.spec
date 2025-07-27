@@ -10,7 +10,7 @@ a = Analysis(
         ('theme.json', '.'),
         ('utils.py', '.'),
         ('interface.py', '.'),
-        ('icons8-plane-50.png', '.')
+        ('aircraftIcon.png', '.')
     ],
     hiddenimports=['PIL._tkinter_finder','customtkinter','tkintermapview'],
     hookspath=[],
