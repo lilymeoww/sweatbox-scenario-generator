@@ -63,18 +63,27 @@ class App(customtkinter.CTk):
 
         self.placeAirportSelect()
 
+        self.activeControllersFrame = customtkinter.CTkScrollableFrame(
+            self, corner_radius=12)
+        self.activeControllersFrame.grid(
+            row=1, column=0, rowspan=1, sticky="nsew", padx=5, pady=5)
+        self.activeControllersFrame.grid_rowconfigure(3, weight=1)
+        self.activeControllersFrame.grid_columnconfigure(0, weight=1)
+
+        activeControllersLablel = customtkinter.CTkLabel(
+            self.activeControllersFrame, text="Active Controllers", font=customtkinter.CTkFont(size=15, weight="bold"))
+        activeControllersLablel.grid(row=0, column=0, padx=20, pady=(20, 10))
+
         self.flightDataFrame = customtkinter.CTkScrollableFrame(
             self, corner_radius=12)
         self.flightDataFrame.grid(
-            row=1, column=0, rowspan=4, sticky="nsew", padx=5, pady=5)
+            row=2, column=0, rowspan=2, sticky="nsew", padx=5, pady=5)
         self.flightDataFrame.grid_rowconfigure(3, weight=1)
         self.flightDataFrame.grid_columnconfigure(0, weight=1)
 
         flightDataHeaderLablel = customtkinter.CTkLabel(
             self.flightDataFrame, text="Current Aircraft", font=customtkinter.CTkFont(size=15, weight="bold"))
         flightDataHeaderLablel.grid(row=0, column=0, padx=20, pady=(20, 10))
-        
-        self.placeFlightData("")
 
         self.mapFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
@@ -205,7 +214,7 @@ class App(customtkinter.CTk):
             self.airportSelectFrame, variable=airportVar, values=list(self.selectableAirports.keys()), command=lambda _: self.switchAirport(self.selectableAirports[airportVar.get()]["airport"]))
         airportDropdown.grid(row=1, column=0, padx=20, pady=10)
 
-        customtkinter.CTkButton(self.airportSelectFrame, text="Test", command=lambda: Modal(self,"This is a test modal","Success")).grid(row=2, column=0, pady=10)
+        #customtkinter.CTkButton(self.airportSelectFrame, text="Test", command=lambda: Modal(self,"This is a test modal","Success")).grid(row=2, column=0, pady=10)
 
     def placeFlightData(self, flights) -> None:
         flightDataLablel = customtkinter.CTkLabel(
@@ -372,6 +381,16 @@ class App(customtkinter.CTk):
             aircraftDataString += f"Stand {aircraft.stand}: {aircraft.cs}, {aircraft.ac_type}\n"
         self.placeFlightData(aircraftDataString) 
         return 
+    
+    def updateActiveControllers(self, activeControllers, controllerData) -> None:
+        controllerString = ""
+        for controllerGroup in self.activeControllers:
+            for controller in self.activeControllers[controllerGroup]:
+                controllerString += f"{controllerGroup}_{controller}: {controllerData[controllerGroup][controller]}MHz\n"
+
+        self.activeControllersFrame = customtkinter.CTkLabel(
+            self.activeControllersFrame, text=controllerString, font=customtkinter.CTkFont())
+        self.activeControllersFrame.grid(row=1, column=0, padx=20, pady=(20, 10))
 
     def updateVFRLabel(self, value) -> None:
         numberOfPlanes = int(self.numberOfPlanesEntry.get(
@@ -688,14 +707,15 @@ class App(customtkinter.CTk):
         controllerWindow.geometry("350x500")
         controllerWindow.grid_columnconfigure(0, weight=1)
 
-        def saveControllers() -> None:
+        def saveControllers(controllers) -> None:
+            self.updateActiveControllers(self.activeControllers, controllers)
             controllerWindow.destroy()
 
         with open(resourcePath("rsc/controllers.json"))as f:
             controllers = json.load(f)
 
         save_button = customtkinter.CTkButton(
-            controllerWindow, text="Add Selected Controllers", command=saveControllers)
+            controllerWindow, text="Add Selected Controllers", command=lambda: saveControllers(controllers))
         save_button.grid(row=0, column=0, pady=20)
 
         controllerVar = tk.StringVar(value="Select Controller")
