@@ -53,7 +53,7 @@ class App(customtkinter.CTk):
         self.airportSelectFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
         self.airportSelectFrame.grid(
-            row=0, column=0, rowspan=4, sticky="nsew", padx=5, pady=5)
+            row=0, column=0, rowspan=1, sticky="nsew", padx=5, pady=5)
         self.airportSelectFrame.grid_rowconfigure(3, weight=1)
         self.airportSelectFrame.grid_columnconfigure(0, weight=1)
 
@@ -66,7 +66,7 @@ class App(customtkinter.CTk):
         self.flightDataFrame = customtkinter.CTkScrollableFrame(
             self, corner_radius=12)
         self.flightDataFrame.grid(
-            row=2, column=0, rowspan=4, sticky="nsew", padx=5, pady=5)
+            row=1, column=0, rowspan=4, sticky="nsew", padx=5, pady=5)
         self.flightDataFrame.grid_rowconfigure(3, weight=1)
         self.flightDataFrame.grid_columnconfigure(0, weight=1)
 
