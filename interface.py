@@ -525,7 +525,6 @@ class App(customtkinter.CTk):
                 lat = standData[stand][0]
                 long = standData[stand][1]
                 usedStands.append(stand)
-                #self.setMarkers(self.activeAirport, usedStands, self.manualPilots)
 
             if heading == "C":
                 hdg = int(hdgEntry.get())
