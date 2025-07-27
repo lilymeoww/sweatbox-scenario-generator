@@ -97,10 +97,11 @@ class Pilot:
         Pseudo route for aircraft
     """
 
-    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, speed: str = "420", timeUntilSpawn: str = "0", levelByFix: str = '', levelByLevel: str = "3000",owner: str = None):
+    def __init__(self, cs: str, lat: str, long: str, stand: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, speed: str = "420", timeUntilSpawn: str = "0", levelByFix: str = '', levelByLevel: str = "3000",owner: str = None):
         self.cs = cs
         self.lat = lat
         self.long = long
+        self.stand = stand
         self.alt = alt
         self.hdg = hdg
         self.dep = dep
@@ -219,7 +220,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
     for pilot in manualPilots:
         scenario.add_pilot(pilot)
 
-    return scenario.generate_scenario(), occupiedStands
+    return scenario.generate_scenario(), occupiedStands, scenario.pilots
 
 
 def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
@@ -255,8 +256,9 @@ def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
         pseudoRoute = f"{" ".join(arrivalRoutes[arrival.icao])} CF24 ILS24"
         levelByFix = "CF24"
         levelAtFix = "2500"
+        stand = "0" # TODO: Is this the best way to handle this?
 
-        pilot = Pilot(cs, lat, long, alt, heading, dep, sq,
+        pilot = Pilot(cs, lat, long, stand, alt, heading, dep, sq,
                       rules, actype, cruiseLevel, dest, rmk, route, pseudoRoute, "180", offset, levelByFix, levelAtFix,owner="EGPH")
         pilots.append(pilot)
 
@@ -332,7 +334,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         crz = (500 * random.randint(1, 3)) + 1000
         rmk = "v"
         rte = "VFR"
-        pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
+        pilots.append(Pilot(cs, lat, long, stand, dep.altitude, hdg,
                       dep.icao, sq, rules, ac_type, crz, dest, rmk, rte, ""))
 
     with open(resourcePath("rsc/callsignsIFR.json")) as jsonData:
@@ -379,8 +381,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             print(f"SYSTEM: NO MORE STANDS AVAILABLE | {current_sq-1} AIRCRAFT GENERATED")
             return pilots, occupiedStands
 
-        lat, long, hdg = selectedStand[0], selectedStand[1], int(
-            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
+        lat, long, hdg = selectedStand[0], selectedStand[1], convertHeading(selectedStand[2])
         rmk = "v"
 
         if random.randint(1, 100) <= level_factor:
@@ -405,7 +406,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
                 possAirports = JSONInjest.get(depAirport)
                 depAirport = random.choice(possAirports).split(",")
 
-        pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
+        pilots.append(Pilot(cs, lat, long, stand, dep.altitude, hdg,
                             depAirport, sq, rules, acType, crz, dest, rmk, rte, ""))
 
     return pilots, occupiedStands
@@ -446,6 +447,9 @@ def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
     except FileNotFoundError:
         print("ERROR : file not found.")
     return f"{departure}", "E"
+
+def convertHeading(hdg) -> int:
+    return int(((int(hdg) * 2.88) + 0.5)) << 2
 
 def loadStand(icao) -> dict:
     """Loads the stand information for a given airport

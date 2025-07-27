@@ -4,7 +4,7 @@ import customtkinter
 import os
 import re
 import json
-from utils import resourcePath, generateSweatboxText, loadStand, loadStandNums, Pilot, Airport, Controller
+from utils import resourcePath, generateSweatboxText, loadStand, loadStandNums, convertHeading, Pilot, Airport, Controller
 import tkintermapview
 from PIL import Image, ImageTk
 from Modal import Modal
@@ -23,8 +23,8 @@ class App(customtkinter.CTk):
 
         # configure window
         self.title("Sweatbox Scenario Generator")
-        self.geometry(f"{1100}x{650}")
-    
+        self.geometry(f"{1280}x{720}")
+
         self.vfrPercentage = tk.IntVar()
         self.invalidRoutePercentage = tk.IntVar()
         self.invalidLevelPercentage = tk.IntVar()
@@ -53,7 +53,7 @@ class App(customtkinter.CTk):
         self.airportSelectFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
         self.airportSelectFrame.grid(
-            row=0, column=0, rowspan=4, sticky="nsew", padx=5, pady=5)
+            row=0, column=0, rowspan=1, sticky="nsew", padx=5, pady=5)
         self.airportSelectFrame.grid_rowconfigure(3, weight=1)
         self.airportSelectFrame.grid_columnconfigure(0, weight=1)
 
@@ -62,6 +62,28 @@ class App(customtkinter.CTk):
         airportSelectLabel.grid(row=0, column=0, padx=20, pady=(20, 10))
 
         self.placeAirportSelect()
+
+        self.activeControllersFrame = customtkinter.CTkScrollableFrame(
+            self, corner_radius=12)
+        self.activeControllersFrame.grid(
+            row=1, column=0, rowspan=1, sticky="nsew", padx=5, pady=5)
+        self.activeControllersFrame.grid_rowconfigure(3, weight=1)
+        self.activeControllersFrame.grid_columnconfigure(0, weight=1)
+
+        activeControllersLablel = customtkinter.CTkLabel(
+            self.activeControllersFrame, text="Active Controllers", font=customtkinter.CTkFont(size=15, weight="bold"))
+        activeControllersLablel.grid(row=0, column=0, padx=20, pady=(20, 10))
+
+        self.flightDataFrame = customtkinter.CTkScrollableFrame(
+            self, corner_radius=12)
+        self.flightDataFrame.grid(
+            row=2, column=0, rowspan=2, sticky="nsew", padx=5, pady=5)
+        self.flightDataFrame.grid_rowconfigure(3, weight=1)
+        self.flightDataFrame.grid_columnconfigure(0, weight=1)
+
+        flightDataHeaderLablel = customtkinter.CTkLabel(
+            self.flightDataFrame, text="Current Aircraft", font=customtkinter.CTkFont(size=15, weight="bold"))
+        flightDataHeaderLablel.grid(row=0, column=0, padx=20, pady=(20, 10))
 
         self.mapFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
@@ -76,6 +98,7 @@ class App(customtkinter.CTk):
 
         self.mapWidget.set_position(55.4, -2.75)
         self.mapWidget.set_zoom(6)
+        self.marker_info_box = None
 
         self.planeIconList = []
 
@@ -191,7 +214,12 @@ class App(customtkinter.CTk):
             self.airportSelectFrame, variable=airportVar, values=list(self.selectableAirports.keys()), command=lambda _: self.switchAirport(self.selectableAirports[airportVar.get()]["airport"]))
         airportDropdown.grid(row=1, column=0, padx=20, pady=10)
 
-        customtkinter.CTkButton(self.airportSelectFrame, text="Test", command=lambda: Modal(self,"This is a test modal","Success")).grid(row=2, column=0, pady=10)
+        #customtkinter.CTkButton(self.airportSelectFrame, text="Test", command=lambda: Modal(self,"This is a test modal","Success")).grid(row=2, column=0, pady=10)
+
+    def placeFlightData(self, flights) -> None:
+        flightDataLablel = customtkinter.CTkLabel(
+            self.flightDataFrame, text=flights, font=customtkinter.CTkFont())
+        flightDataLablel.grid(row=1, column=0, padx=20, pady=(20, 10))
 
     def getSectorFile(self) -> str:
         """Get the location of the sectorfile
@@ -312,11 +340,12 @@ class App(customtkinter.CTk):
             offsets = [offset for offset in offsets if int(offset) <= int(lengthOfSb)]
             print(f"SYSTEM: {offsets=}")
         
-        self.sweatboxContents, occupiedStands = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
+        self.sweatboxContents, occupiedStands, generatedPilots = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
                                                      int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots, offsets, usedStands)
 
         print(f"SYSTEM: GENERATED SWEATBOX FILE")
-        self.setMarkers(self.activeAirport, occupiedStands)
+        self.setMarkers(self.activeAirport, occupiedStands, generatedPilots)
+        self.updateFlightData(generatedPilots)
 
         if self.outputDirectory:
             fileName = filedialog.asksaveasfilename(
@@ -340,6 +369,28 @@ class App(customtkinter.CTk):
         Modal(self,"Sweatbox Generated","Success!")
         print(f"SYSTEM: BYE")
         #self.destroy()
+
+    def updateFlightData(self, flightData) -> None:
+        def stand_sort_key(pilot):
+            match = re.match(r"(\d+)", str(pilot.stand))
+            return int(match.group(1)) if match else 0
+
+        flightData.sort(key=stand_sort_key)
+        aircraftDataString = ""
+        for aircraft in flightData:
+            aircraftDataString += f"Stand {aircraft.stand}: {aircraft.cs}, {aircraft.ac_type}\n"
+        self.placeFlightData(aircraftDataString) 
+        return 
+    
+    def updateActiveControllers(self, activeControllers, controllerData) -> None:
+        controllerString = ""
+        for controllerGroup in self.activeControllers:
+            for controller in self.activeControllers[controllerGroup]:
+                controllerString += f"{controllerGroup}_{controller}: {controllerData[controllerGroup][controller]}MHz\n"
+
+        self.activeControllersFrame = customtkinter.CTkLabel(
+            self.activeControllersFrame, text=controllerString, font=customtkinter.CTkFont())
+        self.activeControllersFrame.grid(row=1, column=0, padx=20, pady=(20, 10))
 
     def updateVFRLabel(self, value) -> None:
         numberOfPlanes = int(self.numberOfPlanesEntry.get(
@@ -375,7 +426,8 @@ class App(customtkinter.CTk):
         print(f"SYSTEM: ACTIVE AIRPORT {airport.icao}")
 
         usedStands = []
-        self.setMarkers(airport, usedStands)
+        aircraftData = []
+        self.setMarkers(airport, usedStands, aircraftData)
 
         with open(resourcePath("rsc/mapConfig.json")) as positionData:
             mapConfig = json.load(positionData)
@@ -385,7 +437,36 @@ class App(customtkinter.CTk):
         self.mapWidget.set_position(float(lat), float(long))
         self.mapWidget.set_zoom(int(zoom))
 
-    def setMarkers(self, airport: Airport, used) -> None:
+        #self.updateFlightData([""]) # TODO: Clear list of generated aircraft when chainging airport.
+
+    def displayflightData(self, marker, aircraftData) -> None:
+        pos = 0
+        found = False
+        while marker.text != aircraftData[pos].stand and found == False:
+            pos += 1
+        found = True
+
+        if self.marker_info_box is not None:
+            self.marker_info_box.destroy()
+            self.marker_info_box = None
+
+        self.marker_info_box = customtkinter.CTkFrame(self.mapFrame, corner_radius=12)
+        self.marker_info_box.place(relx=0.5, rely=0.05, anchor="n")
+
+        label = customtkinter.CTkLabel(
+            self.marker_info_box,
+            text=f"Stand: {marker.text}\nCallsign: {aircraftData[pos].cs}\nDestination: {aircraftData[pos].dest}\nCruise Level: {aircraftData[pos].crz}")
+        label.pack(padx=15, pady=10)
+
+        close_btn = customtkinter.CTkButton(
+            self.marker_info_box,
+            text="Close",
+            command=lambda: (self.marker_info_box.destroy(), setattr(self, "marker_info_box", None)),
+            width=120,
+        )
+        close_btn.pack(pady=(15, 10))
+        
+    def setMarkers(self, airport: Airport, used, aircraftData) -> None:
         """Draws markers for each defined stand
 
         Args:
@@ -395,13 +476,13 @@ class App(customtkinter.CTk):
 
         markers = {}
         self.mapWidget.delete_all_marker()
-        image = Image.open(resourcePath("icons8-plane-50.png"))
+        image = Image.open(resourcePath("aircraftIcon.png"))
         image = image.resize((20, 20))
         for stand in stands:
             selectedStand = stands.get(stand)
             if stand in used:
                 planeIcon = ImageTk.PhotoImage(image.rotate(90 - int(stands[stand][2])))
-                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand, icon=planeIcon)
+                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand, icon=planeIcon, command=lambda marker, ad=aircraftData: self.displayflightData(marker, ad))
                 #self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand) # Original red markers
             else:
                 self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand, marker_color_outside="Light Green", marker_color_circle="Green")
@@ -434,10 +515,11 @@ class App(customtkinter.CTk):
         newWindow.title("Add Manual Pilot")
         newWindow.geometry("650x550")
         
-        def save_pilot(lat, long, hdg) -> None:
+        def save_pilot(lat, long, hdg, stand) -> None:
             callsign = callsignEntry.get().upper()
             alt = self.activeAirport.altitude
             dep = self.activeAirport.icao
+            hdg = convertHeading(hdg)
             sq = f"{len(self.manualPilots):04}"
             rules = str(rulesVar.get())
             acType = typeEntry.get().upper()
@@ -446,13 +528,14 @@ class App(customtkinter.CTk):
             rmk = rmkVar.get().upper()
             route = routeEntry.get().upper()
 
-            pilot = Pilot(callsign, lat, long, alt, hdg, dep, sq,
+            pilot = Pilot(callsign, lat, long, stand, alt, hdg, dep, sq,
                           rules, acType, cruiseLvl, dest, rmk, route, route)
             self.manualPilots.append(pilot)
+            self.setMarkers(self.activeAirport, usedStands, self.manualPilots)
+            self.updateFlightData(self.manualPilots)
             newWindow.destroy()
 
         def set_position(position, heading, standData, usedStands) -> None:
-            print(rmkVar.get())
             if position == "C":
                 lat = latEntry.get()
                 long = longEntry.get()
@@ -461,13 +544,12 @@ class App(customtkinter.CTk):
                 lat = standData[stand][0]
                 long = standData[stand][1]
                 usedStands.append(stand)
-                self.setMarkers(self.activeAirport, usedStands)
 
             if heading == "C":
                 hdg = int(hdgEntry.get())
             else:
                 hdg = standData[stand][2]
-            save_pilot(lat, long, hdg)
+            save_pilot(lat, long, hdg, stand)
 
         rowCount = 0
         customtkinter.CTkLabel(newWindow, text="Enter Pilot Details", font=customtkinter.CTkFont(
@@ -625,14 +707,15 @@ class App(customtkinter.CTk):
         controllerWindow.geometry("350x500")
         controllerWindow.grid_columnconfigure(0, weight=1)
 
-        def saveControllers() -> None:
+        def saveControllers(controllers) -> None:
+            self.updateActiveControllers(self.activeControllers, controllers)
             controllerWindow.destroy()
 
         with open(resourcePath("rsc/controllers.json"))as f:
             controllers = json.load(f)
 
         save_button = customtkinter.CTkButton(
-            controllerWindow, text="Add Selected Controllers", command=saveControllers)
+            controllerWindow, text="Add Selected Controllers", command=lambda: saveControllers(controllers))
         save_button.grid(row=0, column=0, pady=20)
 
         controllerVar = tk.StringVar(value="Select Controller")
