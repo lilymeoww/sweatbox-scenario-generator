@@ -400,11 +400,11 @@ class App(customtkinter.CTk):
         for stand in stands:
             selectedStand = stands.get(stand)
             if stand in used:
-                planeIcon = ImageTk.PhotoImage(image.rotate(90 - int(stands[stand][2])))
-                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand, icon=planeIcon)
-                #self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand) # Original red markers
+                planeIcon = ImageTk.PhotoImage(image.rotate(90 - int(stands[stand]["hdg"])))
+                self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand, icon=planeIcon)
+                #self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand) # Original red markers
             else:
-                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand, marker_color_outside="Light Green", marker_color_circle="Green")
+                self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand, marker_color_outside="Light Green", marker_color_circle="Green")
             markers[stand] = self.mapWidget
 
     def loadAirports(self) -> None:
