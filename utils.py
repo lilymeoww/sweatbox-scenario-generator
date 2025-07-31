@@ -379,12 +379,8 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             print(f"SYSTEM: NO MORE STANDS AVAILABLE | {current_sq-1} AIRCRAFT GENERATED")
             return pilots, occupiedStands
 
-<<<<<<< Updated upstream
-        lat, long, hdg = selectedStand[0], selectedStand[1], int(
-            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
-=======
-        lat, long, hdg = selectedStand["lat"], selectedStand["long"], convertHeading(selectedStand["hdg"])
->>>>>>> Stashed changes
+        lat, long, hdg = selectedStand["lat"], selectedStand["long"], (
+            int((int(selectedStand["hdg"]) * 2.88) + 0.5)) << 2
         rmk = "v"
 
         if random.randint(1, 100) <= level_factor:
