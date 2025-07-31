@@ -112,8 +112,9 @@ class App(customtkinter.CTk):
             self.generateFrame, placeholder_text="20")
         self.numberOfPlanesEntry.grid(row=1, column=0, padx=20, pady=(5, 10))
 
+        usedStands = []
         self.manualAdd = customtkinter.CTkButton(
-            self.generateFrame, text="Add Pilot Manually", command=self.addManualPilot)
+            self.generateFrame, text="Add Pilot Manually", command=lambda: self.addManualPilot(usedStands))
         self.manualAdd.grid(row=2, column=0, padx=20, pady=10)
 
         self.addATC = customtkinter.CTkButton(
@@ -121,7 +122,7 @@ class App(customtkinter.CTk):
         self.addATC.grid(row=3, column=0, padx=20, pady=10)
 
         self.generateButton = customtkinter.CTkButton(
-            self.generateFrame, text="Generate Sweatbox file", command=self.generate)
+            self.generateFrame, text="Generate Sweatbox file", command=lambda: self.generate(usedStands))
         self.generateButton.grid(row=4, column=0, padx=20, pady=10)
 
     def placeSliders(self) -> None:
@@ -257,7 +258,7 @@ class App(customtkinter.CTk):
 
         return controllers
 
-    def generate(self) -> None:
+    def generate(self, usedStands) -> None:
         """Generate the sweatbox file, and destroy the window
         """
         controllers = self.getControllers()
@@ -311,7 +312,7 @@ class App(customtkinter.CTk):
             print(f"SYSTEM: {offsets=}")
         
         self.sweatboxContents, occupiedStands = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
-                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots, offsets)
+                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots, offsets, usedStands)
 
         print(f"SYSTEM: GENERATED SWEATBOX FILE")
         self.setMarkers(self.activeAirport, occupiedStands)
@@ -393,12 +394,16 @@ class App(customtkinter.CTk):
 
         markers = {}
         self.mapWidget.delete_all_marker()
+        image = Image.open(resourcePath("icons8-plane-50.png"))
+        image = image.resize((20, 20))
         for stand in stands:
             selectedStand = stands.get(stand)
             if stand in used:
-                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand)
+                planeIcon = ImageTk.PhotoImage(image.rotate(90 - int(stands[stand]["hdg"])))
+                self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand, icon=planeIcon)
+                #self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand) # Original red markers
             else:
-                self.mapWidget.set_marker(float(selectedStand[0]), float(selectedStand[1]), text=stand, marker_color_outside="Light Green", marker_color_circle="Green")
+                self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand, marker_color_outside="Light Green", marker_color_circle="Green")
             markers[stand] = self.mapWidget
 
     def loadAirports(self) -> None:
@@ -421,7 +426,7 @@ class App(customtkinter.CTk):
                 airport, elevation, runway, position)
             self.selectableAirports[airport]["approachData"] = appDataStr
 
-    def addManualPilot(self) -> None:
+    def addManualPilot(self, usedStands) -> None:
         """Open a new window to add a manual pilot
         """
         newWindow = customtkinter.CTkToplevel(self)
@@ -429,23 +434,23 @@ class App(customtkinter.CTk):
         newWindow.geometry("650x550")
         
         def save_pilot(lat, long, hdg) -> None:
-            callsign = callsignEntry.get()
+            callsign = callsignEntry.get().upper()
             alt = self.activeAirport.altitude
             dep = self.activeAirport.icao
             sq = f"{len(self.manualPilots):04}"
             rules = str(rulesVar.get())
-            acType = typeEntry.get()
+            acType = typeEntry.get().upper()
             cruiseLvl = cruiseLvlEntry.get()
-            dest = destEntry.get()
-            rmk = rmkVar.get()
-            route = routeEntry.get()
+            dest = destEntry.get().upper()
+            rmk = rmkVar.get().upper()
+            route = routeEntry.get().upper()
 
             pilot = Pilot(callsign, lat, long, alt, hdg, dep, sq,
                           rules, acType, cruiseLvl, dest, rmk, route, route)
             self.manualPilots.append(pilot)
-            # newWindow.destroy()
+            newWindow.destroy()
 
-        def set_position(position, heading, standData) -> None:
+        def set_position(position, heading, standData, usedStands) -> None:
             print(rmkVar.get())
             if position == "C":
                 lat = latEntry.get()
@@ -454,6 +459,8 @@ class App(customtkinter.CTk):
                 stand = standNumber.get()
                 lat = standData[stand][0]
                 long = standData[stand][1]
+                usedStands.append(stand)
+                self.setMarkers(self.activeAirport, usedStands)
 
             if heading == "C":
                 hdg = int(hdgEntry.get())
@@ -474,12 +481,12 @@ class App(customtkinter.CTk):
 
         customtkinter.CTkLabel(newWindow, text="Position").grid(
             row=rowCount, column=0, pady=5, sticky="e")
-        positionVar = tk.StringVar(value="C")
+        positionVar = tk.StringVar(value="D")
         coordsRadio = customtkinter.CTkRadioButton(
             newWindow, text="Coordinates", variable=positionVar, value="C")
         coordsRadio.grid(row=rowCount, column=1, padx=(10, 5), pady=5, sticky="w")
         dropdownRadio = customtkinter.CTkRadioButton(
-            newWindow, text="Choose stand from list", variable=positionVar, value="D")
+            newWindow, text="Choose stand from list", variable=positionVar, value="D") # D = dropdown
         dropdownRadio.grid(row=rowCount, column=2, padx=(5, 10), pady=5, sticky="w")
         rowCount += 1
 
@@ -574,7 +581,7 @@ class App(customtkinter.CTk):
         rowCount += 1
 
         save_button = customtkinter.CTkButton(
-            newWindow, text="Add pilot", command=lambda: set_position(positionVar.get(), headingSel.get(), standData))
+            newWindow, text="Add pilot", command=lambda: set_position(positionVar.get(), headingSel.get(), standData, usedStands))
         save_button.grid(row=rowCount, column=0, columnspan=2, pady=20)
         rowCount += 1
 

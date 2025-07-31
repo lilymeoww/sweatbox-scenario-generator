@@ -187,7 +187,7 @@ class Scenario:
         return scenario_file_str
 
 
-def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot], arrivalOffsets: list[str]) -> str:
+def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot], arrivalOffsets: list[str], occupiedStands) -> str:
     """Generates pilots and controllers, adds them to a scenario and generates the resulting text
 
     Args:
@@ -211,7 +211,7 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
         scenario.add_controller(controller)
 
     pilots, occupiedStands = generate_random_plans(autoPilots, airport, vfrP,
-                                   invalidRouteP, invalidLevelP, fplanErrorsP)
+                                   invalidRouteP, invalidLevelP, fplanErrorsP, occupiedStands)
     pilots += generate_arrival_plans(airport, arrivalOffsets)
     for pilot in pilots:
         scenario.add_pilot(pilot)
@@ -263,7 +263,7 @@ def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
     return pilots
 
 
-def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_factor: int, level_factor: int, entry_error_factor: int) -> list[Pilot]:
+def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_factor: int, level_factor: int, entry_error_factor: int, occupiedStands) -> list[Pilot]:
     """Generates a given number of VFR and IFR flightplans
 
     Args:
@@ -280,31 +280,48 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     numberOfVfr = int(amount * vfr_factor/100)
 
     pilots = []
-    occupiedStands = []
 
     stands = loadStand(dep.icao)
+
+    for entry in occupiedStands:
+        if entry in stands:
+            blockingData = stands[entry][3]
+            stands.pop(entry)
+            print(f"SYSTEM: STAND {entry} REMOVED")
+            for block in blockingData:
+                if block in stands:
+                    stands.pop(block)
+                    print(f"SYSTEM: STAND {block} REMOVED")
 
     with open(resourcePath("rsc/callsignsVFR.json")) as jsonData:
         JSONInjest = json.load(jsonData)
     callsigns = JSONInjest.get("callsigns")
 
+    with open(resourcePath("rsc/vfrDestinations.json")) as jsonData:
+        JSONInjest = json.load(jsonData)
+    possDest = JSONInjest.get(dep.icao)
+
     current_sq = 0
     for _ in range(numberOfVfr):
         current_sq += 1
         cs = random.choice(list(callsigns))
-        callsigns.pop(cs, None)
         rules = "V"
-        dest = random.choice(
-            ["EGPF", "EGPB", "EGNX", "EGPC", "EGAA", "EGPH", "EGLK", "EGLF", "EGMA", "EGFF"])
-        ac_type = random.choice(["P28A", "C172", "C152", "DA42", "SR22"])
+        dest = random.choice(possDest)
+        ac_type = random.choice(callsigns[cs].split(","))
+        callsigns.pop(cs, None)
+
+        if(callsigns == {}):
+            print(f"SYSTEM: NO MORE CALLSIGNS AVAILABLE | {current_sq} AIRCRAFT GENERATED")
+            break
+
         stand = random.choice(list(stands))
         print(f"SYSTEM: VFR {cs} ASSIGNED TO STAND {stand}")
         selectedStand = stands.get(stand)
         occupiedStands.append(stand)
         stands.pop(stand)
 
-        lat, long, hdg, block = selectedStand[0], selectedStand[1], int(
-            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2, selectedStand[3]
+        lat, long, hdg, block = selectedStand["lat"], selectedStand["long"], int(
+            ((int(selectedStand["hdg"]) * 2.88) + 0.5)) << 2, selectedStand["blocks"]
         for standToRemove in block:
             if standToRemove in stands:
                 stands.pop(standToRemove)
@@ -354,7 +371,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         occupiedStands.append(stand)
         stands.pop(stand)
         if(stands != {}):
-            for standToRemove in selectedStand[3]:
+            for standToRemove in selectedStand["blocks"]:
                 if standToRemove in stands:
                     stands.pop(standToRemove)
                 print(f"SYSTEM: STAND {standToRemove} REMOVED")
@@ -362,8 +379,8 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             print(f"SYSTEM: NO MORE STANDS AVAILABLE | {current_sq-1} AIRCRAFT GENERATED")
             return pilots, occupiedStands
 
-        lat, long, hdg = selectedStand[0], selectedStand[1], int(
-            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
+        lat, long, hdg = selectedStand["lat"], selectedStand["long"], (
+            int((int(selectedStand["hdg"]) * 2.88) + 0.5)) << 2
         rmk = "v"
 
         if random.randint(1, 100) <= level_factor:
@@ -428,7 +445,7 @@ def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
 
     except FileNotFoundError:
         print("ERROR : file not found.")
-    return f"{departure} {arrival}", "E"
+    return f"{departure}", "E"
 
 def loadStand(icao) -> dict:
     """Loads the stand information for a given airport
