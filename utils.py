@@ -320,8 +320,8 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         occupiedStands.append(stand)
         stands.pop(stand)
 
-        lat, long, hdg, block = selectedStand[0], selectedStand[1], int(
-            ((int(selectedStand[2]) * 2.88) + 0.5)) << 2, selectedStand[3]
+        lat, long, hdg, block = selectedStand["lat"], selectedStand["long"], int(
+            ((int(selectedStand["hdg"]) * 2.88) + 0.5)) << 2, selectedStand["blocks"]
         for standToRemove in block:
             if standToRemove in stands:
                 stands.pop(standToRemove)
@@ -371,7 +371,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         occupiedStands.append(stand)
         stands.pop(stand)
         if(stands != {}):
-            for standToRemove in selectedStand[3]:
+            for standToRemove in selectedStand["blocks"]:
                 if standToRemove in stands:
                     stands.pop(standToRemove)
                 print(f"SYSTEM: STAND {standToRemove} REMOVED")
@@ -379,8 +379,12 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             print(f"SYSTEM: NO MORE STANDS AVAILABLE | {current_sq-1} AIRCRAFT GENERATED")
             return pilots, occupiedStands
 
+<<<<<<< Updated upstream
         lat, long, hdg = selectedStand[0], selectedStand[1], int(
             ((int(selectedStand[2]) * 2.88) + 0.5)) << 2
+=======
+        lat, long, hdg = selectedStand["lat"], selectedStand["long"], convertHeading(selectedStand["hdg"])
+>>>>>>> Stashed changes
         rmk = "v"
 
         if random.randint(1, 100) <= level_factor:
