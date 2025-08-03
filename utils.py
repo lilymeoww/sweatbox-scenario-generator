@@ -285,7 +285,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
 
     for entry in occupiedStands:
         if entry in stands:
-            blockingData = stands[entry][3]
+            blockingData = stands[entry]["blocks"]
             stands.pop(entry)
             print(f"SYSTEM: STAND {entry} REMOVED")
             for block in blockingData:
@@ -337,7 +337,10 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
 
     with open(resourcePath("rsc/callsignsIFR.json")) as jsonData:
         JSONInjest = json.load(jsonData)
-    callsigns = JSONInjest.get("callsigns")
+    if(dep.icao == "EGLL"):
+        callsigns = JSONInjest.get("EGLL")
+    else:
+        callsigns = JSONInjest.get("callsigns")
 
     with open(resourcePath("rsc/aircraftTypes.json")) as jsonData:
         JSONInjest = json.load(jsonData)

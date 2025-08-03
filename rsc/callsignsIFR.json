@@ -17,5 +17,11 @@
     "VIR": "KJFK,KEWR",
     "EWG": "EDDH,EDDM,EDDF",
     "THY": "LTFM"
+  },
+  "EGLL": {
+    "SHT": "EGSS,EGPH,EGPE,EGPF",
+    "BAW": "LFBO,EDDF,LATI",
+    "AAL": "KCLT",
+    "UAL": "KEWR"
   }
 }
