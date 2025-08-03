@@ -19,9 +19,10 @@
     "THY": "LTFM"
   },
   "EGLL": {
-    "SHT": "EGSS,EGPH,EGPE,EGPF",
-    "BAW": "LFBO,EDDF,LATI",
-    "AAL": "KCLT",
-    "UAL": "KEWR"
+    "SHT": "EGSS,EGPH,EGPE,EGPF,EGNT",
+    "BAW": "LFBO,EDDF,LATI,LCPH",
+    "AAL": "KCLT,KLAX",
+    "UAL": "KEWR,KDEN,KLAX",
+    "UAE": "OMDB"
   }
 }
