@@ -283,6 +283,10 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
 
     stands = loadStand(dep.icao)
 
+    if(dep.icao == "EGLL"):
+        with open(resourcePath("rsc/heathrowTerminals.json")) as terminalData:
+            heathrowTerminals = json.load(terminalData)
+
     for entry in occupiedStands:
         if entry in stands:
             blockingData = stands[entry]["blocks"]
@@ -367,7 +371,13 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         possTypes = types[chosenCallsign].split(",")
         acType = random.choice(possTypes)
 
-        stand = random.choice(list(stands))
+        if(dep.icao == "EGLL"):
+            terminal = findTerminal(heathrowTerminals, chosenCallsign)
+            stand = random.choice(list(stands))
+            while(stand[0] != terminal):
+                stand = random.choice(list(stands))
+        else:
+            stand = random.choice(list(stands))
         print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
 
         selectedStand = stands.get(stand)
@@ -449,6 +459,12 @@ def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
     except FileNotFoundError:
         print("ERROR : file not found.")
     return f"{departure}", "E"
+
+def findTerminal(terminals, airline):
+    for parent, children in terminals.items():
+        if airline in children:
+            return parent
+    return None
 
 def loadStand(icao) -> dict:
     """Loads the stand information for a given airport
