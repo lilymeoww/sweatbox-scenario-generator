@@ -351,7 +351,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     types = JSONInjest.get("callsigns")
 
     for _ in range(amount - numberOfVfr):
-
+        
         current_sq += 1
         sq = f"{current_sq:04}"
         depAirport = dep.icao
@@ -364,7 +364,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
                 airlines.append(airline)
 
         chosenCallsign = random.choice(list(airlines))
-        cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
+        cs = chosenCallsign + str(random.randint(11, 99)) + random.choice(
             string.ascii_uppercase) + random.choice(string.ascii_uppercase)
         rules = "I"
 
@@ -373,9 +373,11 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
 
         if(dep.icao == "EGLL"):
             terminal = findTerminal(heathrowTerminals, chosenCallsign)
-            stand = random.choice(list(stands))
-            while(stand[0] != terminal):
-                stand = random.choice(list(stands))
+            currentTerminalStands = [s for s in stands if s[0] == terminal]
+            if not currentTerminalStands:
+                print(f"SYSTEM: NO MORE STANDS AVAILABLE FOR TERMINAL {terminal} | {current_sq-1} AIRCRAFT GENERATED")
+                return pilots, occupiedStands # TODO: Stop program from returning when a single terminal is full.
+            stand = random.choice(currentTerminalStands)
         else:
             stand = random.choice(list(stands))
         print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
