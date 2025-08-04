@@ -351,33 +351,34 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     types = JSONInjest.get("callsigns")
 
     for _ in range(amount - numberOfVfr):
-        
+    
         current_sq += 1
         sq = f"{current_sq:04}"
         depAirport = dep.icao
 
         dest, rte, crz = get_route(depAirport, incorrect_factor)
 
-        airlines = []
-        for airline, destinations in callsigns.items():
-            if dest in destinations.split(","):
-                airlines.append(airline)
-
-        chosenCallsign = random.choice(list(airlines))
-        cs = chosenCallsign + str(random.randint(11, 99)) + random.choice(
-            string.ascii_uppercase) + random.choice(string.ascii_uppercase)
-        rules = "I"
+        chosenCallsign, cs, rules = selectAirline(dest, callsigns)
 
         possTypes = types[chosenCallsign].split(",")
         acType = random.choice(possTypes)
 
         if(dep.icao == "EGLL"):
             terminal = findTerminal(heathrowTerminals, chosenCallsign)
-            currentTerminalStands = [s for s in stands if s[0] == terminal]
-            if not currentTerminalStands:
-                print(f"SYSTEM: NO MORE STANDS AVAILABLE FOR TERMINAL {terminal} | {current_sq-1} AIRCRAFT GENERATED")
-                return pilots, occupiedStands # TODO: Stop program from returning when a single terminal is full.
-            stand = random.choice(currentTerminalStands)
+            validStand = False
+            while(validStand == False):
+                currentTerminalStands = [s for s in stands if s[0] == terminal]
+                if not currentTerminalStands:
+                    print(f"SYSTEM: NO MORE STANDS AVAILABLE FOR TERMINAL {terminal} | {current_sq-1} AIRCRAFT GENERATED")
+                    dest, rte, crz = get_route(depAirport, incorrect_factor)
+                    chosenCallsign, cs, rules = selectAirline(dest, callsigns)
+                    terminal = findTerminal(heathrowTerminals, chosenCallsign)
+                    currentTerminalStands = [s for s in stands if s[0] == terminal]
+                if not currentTerminalStands:
+                    validStand = False
+                else:
+                    validStand = True
+            stand = random.choice(currentTerminalStands)   
         else:
             stand = random.choice(list(stands))
         print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
@@ -435,7 +436,7 @@ def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
         incorrect_factor (int): Percentage of incorrect routes
 
     Returns:
-        tuple[str, str]: Returns the route and the cruise level
+        tuple[str, str, str]: Returns the destination, route and cruise level
     """
     try:
 
@@ -462,11 +463,41 @@ def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
         print("ERROR : file not found.")
     return f"{departure}", "E"
 
+def selectAirline(dest, callsigns):
+    """Selects an apropreate airline based on the destination
+    
+    Args:
+        dest (str): Destination ICAO
+        callsigns (dict): Dictionary of callsigns & destinations
+
+    Returns:
+        tuple[str, str, str]: Returns the chosen callsign, generated callsign and flight rules
+    """
+    airlines = []
+    for airline, destinations in callsigns.items():
+        if dest in destinations.split(","):
+            airlines.append(airline)
+
+    chosenCallsign = random.choice(list(airlines))
+    cs = chosenCallsign + str(random.randint(11, 99)) + random.choice(
+        string.ascii_uppercase) + random.choice(string.ascii_uppercase)
+    rules = "I"
+            
+    return chosenCallsign, cs, rules
+
 def findTerminal(terminals, airline):
+    """Finds the terminal for a given airline at EGLL
+    
+    Args:
+        terminals (dict): Dictionary of terminals and airlines
+        airline (str): Airline being searched for
+
+    Returns:
+        str: Returns the terminal number
+    """
     for parent, children in terminals.items():
         if airline in children:
             return parent
-    return None
 
 def loadStand(icao) -> dict:
     """Loads the stand information for a given airport
