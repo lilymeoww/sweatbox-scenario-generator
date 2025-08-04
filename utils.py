@@ -476,7 +476,8 @@ def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
         print("ERROR : file not found.")
     return f"{departure}", "E"
 
-def selectAirline(dest, callsigns):
+
+def selectAirline(dest: str, callsigns: dict) -> tuple[str, str, str]:
     """Selects an apropreate airline based on the destination
     
     Args:
@@ -498,7 +499,8 @@ def selectAirline(dest, callsigns):
             
     return chosenCallsign, cs, rules
 
-def findTerminal(terminals, airline):
+
+def findTerminal(terminals: dict, airline: str) -> str:
     """Finds the terminal for a given airline at EGLL
     
     Args:
@@ -511,8 +513,9 @@ def findTerminal(terminals, airline):
     for parent, children in terminals.items():
         if airline in children:
             return parent
+        
 
-def loadStand(icao) -> dict:
+def loadStand(icao: str) -> dict:
     """Loads the stand information for a given airport
 
     Args:
@@ -525,7 +528,8 @@ def loadStand(icao) -> dict:
         JSONInjest = json.load(jsonData)
     return JSONInjest.get(icao)
 
-def loadStandNums(icao) -> list:
+
+def loadStandNums(icao: str) -> list:
     """Loads the stand numbers for a given airport
 
     Args:
