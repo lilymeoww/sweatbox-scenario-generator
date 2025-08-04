@@ -2,7 +2,7 @@
   "callsigns": {
     "RYR": "B738,B38M",
     "RUK": "B738",
-    "BAW": "A319,A320,A32N,A21N",
+    "BAW": "A319,A320,A20N,A21N",
     "UAE": "A35K",
     "SHT": "A319,A320,A20N,A21N",
     "EJA": "CL60",
@@ -22,6 +22,6 @@
     "KLM": "B738",
     "AFR": "A318,E190,E170",
     "JBU": "A21N",
-    "FDX": "MD1F"
+    "FDX": "MD11"
   }
 }

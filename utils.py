@@ -373,6 +373,8 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
                     dest, rte, crz = get_route(depAirport, incorrect_factor)
                     chosenCallsign, cs, rules = selectAirline(dest, callsigns)
                     terminal = findTerminal(heathrowTerminals, chosenCallsign)
+                    possTypes = types[chosenCallsign].split(",")
+                    acType = random.choice(possTypes)
                     currentTerminalStands = [s for s in stands if s[0] == terminal]
                 if not currentTerminalStands:
                     validStand = False
