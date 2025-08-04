@@ -350,8 +350,18 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         JSONInjest = json.load(jsonData)
     types = JSONInjest.get("callsigns")
 
+    if(dep.icao == "EGLL"):
+        with open(resourcePath("rsc/heathrowTerminals.json")) as jsonData:
+            JSONInjest = json.load(jsonData)
+        allStands = loadStand(dep.icao)
+        terminalStands = {}
+        for stand_num, stand_data in allStands.items():
+            if stand_num[0] not in terminalStands:
+                terminalStands[stand_num[0]] = {}
+            terminalStands[stand_num[0]][stand_num] = stand_data
+
     for _ in range(amount - numberOfVfr):
-    
+
         current_sq += 1
         sq = f"{current_sq:04}"
         depAirport = dep.icao
@@ -365,22 +375,23 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
 
         if(dep.icao == "EGLL"):
             terminal = findTerminal(heathrowTerminals, chosenCallsign)
-            validStand = False
-            while(validStand == False):
-                currentTerminalStands = [s for s in stands if s[0] == terminal]
-                if not currentTerminalStands:
-                    print(f"SYSTEM: NO MORE STANDS AVAILABLE FOR TERMINAL {terminal} | {current_sq-1} AIRCRAFT GENERATED")
+            while True:
+                if terminalStands[terminal] != {}:
+                    stand = random.choice(list(terminalStands[terminal]))
+                    for standToRemove in terminalStands[terminal][stand]["blocks"]:
+                        if standToRemove in terminalStands[terminal]:
+                            terminalStands[terminal].pop(standToRemove)
+                            stands.pop(standToRemove)
+                            print(f"SYSTEM: STAND {standToRemove} REMOVED")
+                    terminalStands[terminal].pop(stand)
+                    break
+                else:
+                    print(f"SYSTEM: NO MORE STANDS AVAILABLE FOR TERMINAL {terminal} | REGENERATING")
                     dest, rte, crz = get_route(depAirport, incorrect_factor)
                     chosenCallsign, cs, rules = selectAirline(dest, callsigns)
                     terminal = findTerminal(heathrowTerminals, chosenCallsign)
                     possTypes = types[chosenCallsign].split(",")
                     acType = random.choice(possTypes)
-                    currentTerminalStands = [s for s in stands if s[0] == terminal]
-                if not currentTerminalStands:
-                    validStand = False
-                else:
-                    validStand = True
-            stand = random.choice(currentTerminalStands)   
         else:
             stand = random.choice(list(stands))
         print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
