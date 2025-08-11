@@ -405,10 +405,10 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
                 with open(resourcePath("rsc/adepError.json")) as jsonData:
                     JSONInjest = json.load(jsonData)
                 possAirports = JSONInjest.get(depAirport)
-                depAirport = random.choice(possAirports).split(",")
+                depAirport = random.choice(possAirports) #.split(",") # TODO: Determine why this was here.
 
         pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
-                            depAirport, sq, rules, acType, crz, dest, rmk, rte, ""))
+                            depAirport, sq, rules, acType, crz, dest, rmk, rte, ""))   
 
     return pilots, occupiedStands
 
