@@ -283,9 +283,13 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
 
     stands = loadStand(dep.icao)
 
+    if(dep.icao == "EGLL"):
+        with open(resourcePath("rsc/terminals.json")) as terminalData:
+            heathrowTerminals = json.load(terminalData)
+
     for entry in occupiedStands:
         if entry in stands:
-            blockingData = stands[entry][3]
+            blockingData = stands[entry]["blocks"]
             stands.pop(entry)
             print(f"SYSTEM: STAND {entry} REMOVED")
             for block in blockingData:
@@ -337,11 +341,17 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
 
     with open(resourcePath("rsc/callsignsIFR.json")) as jsonData:
         JSONInjest = json.load(jsonData)
-    callsigns = JSONInjest.get("callsigns")
+    if(dep.icao == "EGLL"):
+        callsigns = JSONInjest.get("EGLL")
+    else:
+        callsigns = JSONInjest.get("callsigns")
 
     with open(resourcePath("rsc/aircraftTypes.json")) as jsonData:
         JSONInjest = json.load(jsonData)
     types = JSONInjest.get("callsigns")
+
+    if(dep.icao == "EGLL"):
+        terminalStands = loadTerminals(dep.icao)
 
     for _ in range(amount - numberOfVfr):
 
@@ -351,20 +361,32 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
 
         dest, rte, crz = get_route(depAirport, incorrect_factor)
 
-        airlines = []
-        for airline, destinations in callsigns.items():
-            if dest in destinations.split(","):
-                airlines.append(airline)
-
-        chosenCallsign = random.choice(list(airlines))
-        cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
-            string.ascii_uppercase) + random.choice(string.ascii_uppercase)
-        rules = "I"
+        chosenCallsign, cs, rules = selectAirline(dest, callsigns)
 
         possTypes = types[chosenCallsign].split(",")
         acType = random.choice(possTypes)
 
-        stand = random.choice(list(stands))
+        if(dep.icao == "EGLL"):
+            terminal = findTerminal(heathrowTerminals, chosenCallsign)
+            while True:
+                if terminalStands[terminal] != {}:
+                    stand = random.choice(list(terminalStands[terminal]))
+                    for standToRemove in terminalStands[terminal][stand]["blocks"]:
+                        if standToRemove in terminalStands[terminal]:
+                            terminalStands[terminal].pop(standToRemove)
+                            stands.pop(standToRemove)
+                            print(f"SYSTEM: STAND {standToRemove} REMOVED")
+                    terminalStands[terminal].pop(stand)
+                    break
+                else:
+                    print(f"SYSTEM: NO MORE STANDS AVAILABLE FOR TERMINAL {terminal} | REGENERATING")
+                    dest, rte, crz = get_route(depAirport, incorrect_factor)
+                    chosenCallsign, cs, rules = selectAirline(dest, callsigns)
+                    terminal = findTerminal(heathrowTerminals, chosenCallsign)
+                    possTypes = types[chosenCallsign].split(",")
+                    acType = random.choice(possTypes)
+        else:
+            stand = random.choice(list(stands))
         print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
 
         selectedStand = stands.get(stand)
@@ -430,7 +452,7 @@ def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
         incorrect_factor (int): Percentage of incorrect routes
 
     Returns:
-        tuple[str, str]: Returns the route and the cruise level
+        tuple[str, str, str]: Returns the destination, route and cruise level
     """
     try:
 
@@ -456,7 +478,65 @@ def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
         print("ERROR : file not found.")
     return f"{departure}", "E"
 
-def loadStand(icao) -> dict:
+
+def selectAirline(dest: str, callsigns: dict) -> tuple[str, str, str]:
+    """Selects an apropreate airline based on the destination
+    
+    Args:
+        dest (str): Destination ICAO
+        callsigns (dict): Dictionary of callsigns & destinations
+
+    Returns:
+        tuple[str, str, str]: Returns the chosen callsign, generated callsign and flight rules
+    """
+    airlines = []
+    for airline, destinations in callsigns.items():
+        if dest in destinations.split(","):
+            airlines.append(airline)
+
+    chosenCallsign = random.choice(list(airlines))
+    cs = chosenCallsign + str(random.randint(11, 99)) + random.choice(
+        string.ascii_uppercase) + random.choice(string.ascii_uppercase)
+    rules = "I"
+            
+    return chosenCallsign, cs, rules
+
+
+def loadTerminals(icao) -> dict:
+    """Loads the terminal information for a given airport
+
+    Args:
+        icao (str): ICAO code of the airport
+
+    Returns:
+        dict: Dictionary of terminal data
+
+    """
+    allStands = loadStand(icao)
+    terminalStands = {}
+    for stand_num, stand_data in allStands.items():
+        if stand_num[0] not in terminalStands:
+            terminalStands[stand_num[0]] = {}
+        terminalStands[stand_num[0]][stand_num] = stand_data
+    return terminalStands
+
+
+def findTerminal(terminals: dict, airline: str) -> str:
+    """Finds the terminal for a given airline at EGLL
+    
+    Args:
+        terminals (dict): Dictionary of terminals and airlines
+        airline (str): Airline being searched for
+
+    Returns:
+        str: Returns the terminal number
+    """
+    for parent, children in terminals.items():
+        if airline in children:
+            return parent
+        
+
+def loadStand(icao: str) -> dict:
     """Loads the stand information for a given airport
 
     Args:
@@ -469,7 +549,8 @@ def loadStand(icao) -> dict:
         JSONInjest = json.load(jsonData)
     return JSONInjest.get(icao)
 
-def loadStandNums(icao) -> list:
+
+def loadStandNums(icao: str) -> list:
     """Loads the stand numbers for a given airport
 
     Args:
