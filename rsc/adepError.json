@@ -11,5 +11,10 @@
   ],
   "EGCC": [
     "MAN"
+  ],
+  "EGLL": [
+    "LHR",
+    "EGLC",
+    "LON"
   ]
 }
