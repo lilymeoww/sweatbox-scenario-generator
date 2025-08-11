@@ -384,11 +384,18 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         rmk = "v"
 
         if random.randint(1, 100) <= level_factor:
-
+            crz = int(crz)
             with open(resourcePath("rsc/invalidAltitudes.json")) as jsonData:
                 JSONInjest = json.load(jsonData)
-            alts = JSONInjest.get(dep.icao)
-            crz = alts.get(dest)
+            if JSONInjest.get(dep.icao) != None:
+                alts = JSONInjest.get(dep.icao)
+                if dest in alts:
+                    crz = alts.get(dest)
+                else:
+                    crz += 1000
+            else:
+                crz += 1000
+            crz = str(crz)
 
         if random.randint(1, 100) <= entry_error_factor:
             entry_error_options = ["type", "dep"]
@@ -431,7 +438,6 @@ def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
             with open(resourcePath("rsc/invalidRoutes.json")) as jsonData:
                 JSONInjest = json.load(jsonData)
             routes = JSONInjest.get(departure)
-            
             desitnation, route = random.choice(list(routes.items()))
             print(random.choice(list(route)))
             route = random.choice(list(route)).split(",")
