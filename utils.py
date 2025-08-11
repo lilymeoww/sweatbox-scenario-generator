@@ -351,15 +351,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     types = JSONInjest.get("callsigns")
 
     if(dep.icao == "EGLL"):
-        with open(resourcePath("rsc/heathrowTerminals.json")) as jsonData:
-            JSONInjest = json.load(jsonData)
-        allStands = loadStand(dep.icao)
-        terminalStands = {}
-        for stand_num, stand_data in allStands.items():
-            if stand_num[0] not in terminalStands:
-                terminalStands[stand_num[0]] = {}
-            terminalStands[stand_num[0]][stand_num] = stand_data
-        del allStands, stand_num, stand_data
+        terminalStands = loadHeathrowTerminals(dep.icao)
 
     for _ in range(amount - numberOfVfr):
 
@@ -499,6 +491,18 @@ def selectAirline(dest: str, callsigns: dict) -> tuple[str, str, str]:
     rules = "I"
             
     return chosenCallsign, cs, rules
+
+
+def loadHeathrowTerminals(icao) -> dict:
+    #with open(resourcePath("rsc/heathrowTerminals.json")) as jsonData:
+        #JSONInjest = json.load(jsonData)
+    allStands = loadStand(icao)
+    terminalStands = {}
+    for stand_num, stand_data in allStands.items():
+        if stand_num[0] not in terminalStands:
+            terminalStands[stand_num[0]] = {}
+        terminalStands[stand_num[0]][stand_num] = stand_data
+    return terminalStands
 
 
 def findTerminal(terminals: dict, airline: str) -> str:
