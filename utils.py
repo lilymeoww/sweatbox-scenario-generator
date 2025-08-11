@@ -394,13 +394,11 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             entry_error_options = ["type", "dep"]
             chosen_error = random.choice(entry_error_options)
             if chosen_error == "type":
-
                 with open(resourcePath("rsc/errorTypes.json")) as jsonData:
                     JSONInjest = json.load(jsonData)
                 possTypes = JSONInjest.get("types")
-                tempAcType = possTypes.get(acType)
-                if tempAcType != None:
-                    acType = tempAcType
+                if acType in possTypes:
+                    acType = possTypes.get(acType)
             elif chosen_error == "dep":
                 with open(resourcePath("rsc/adepError.json")) as jsonData:
                     JSONInjest = json.load(jsonData)
