@@ -494,6 +494,15 @@ def selectAirline(dest: str, callsigns: dict) -> tuple[str, str, str]:
 
 
 def loadTerminals(icao) -> dict:
+    """Loads the terminal information for a given airport
+
+    Args:
+        icao (str): ICAO code of the airport
+
+    Returns:
+        dict: Dictionary of terminal data
+
+    """
     allStands = loadStand(icao)
     terminalStands = {}
     for stand_num, stand_data in allStands.items():
