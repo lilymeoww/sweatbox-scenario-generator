@@ -359,6 +359,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             if stand_num[0] not in terminalStands:
                 terminalStands[stand_num[0]] = {}
             terminalStands[stand_num[0]][stand_num] = stand_data
+        del allStands, stand_num, stand_data
 
     for _ in range(amount - numberOfVfr):
 
