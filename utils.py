@@ -406,9 +406,11 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
                     JSONInjest = json.load(jsonData)
                 possAirports = JSONInjest.get(depAirport)
                 depAirport = random.choice(possAirports) #.split(",") # TODO: Determine why this was here.
-
-        pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
-                            depAirport, sq, rules, acType, crz, dest, rmk, rte, "", owner=dep.icao))   
+            pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
+                            depAirport, sq, rules, acType, crz, dest, rmk, rte, "", owner=dep.icao))  
+        else:
+            pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
+                            depAirport, sq, rules, acType, crz, dest, rmk, rte, ""))   
 
     return pilots, occupiedStands
 
