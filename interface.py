@@ -457,15 +457,15 @@ class App(customtkinter.CTk):
                 long = longEntry.get()
             else:
                 stand = standNumber.get()
-                lat = standData[stand][0]
-                long = standData[stand][1]
+                lat = standData[stand]["lat"]
+                long = standData[stand]["long"]
                 usedStands.append(stand)
                 self.setMarkers(self.activeAirport, usedStands)
 
             if heading == "C":
                 hdg = int(hdgEntry.get())
             else:
-                hdg = standData[stand][2]
+                hdg = standData[stand]["hdg"]
             save_pilot(lat, long, hdg)
 
         rowCount = 0
