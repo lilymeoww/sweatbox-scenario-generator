@@ -5,6 +5,7 @@ import os
 import re
 import json
 from utils import resourcePath, generateSweatboxText, loadStand, loadStandNums, Pilot, Airport, Controller
+from loadSbFile import loadFile
 import tkintermapview
 from PIL import Image, ImageTk
 from Modal import Modal
@@ -191,6 +192,7 @@ class App(customtkinter.CTk):
         airportDropdown.grid(row=1, column=0, padx=20, pady=10)
 
         customtkinter.CTkButton(self.airportSelectFrame, text="Test", command=lambda: Modal(self,"This is a test modal","Success")).grid(row=2, column=0, pady=10)
+        customtkinter.CTkButton(self.airportSelectFrame, text="Load from file", command=lambda: self.loadScenarioFile()).grid(row=3, column=0, pady=10)
 
     def getSectorFile(self) -> str:
         """Get the location of the sectorfile
@@ -684,6 +686,9 @@ class App(customtkinter.CTk):
         self.mapWidget.set_marker(
             float(lat), float(long), icon=planeIcon)
         
+    def loadScenarioFile(self):
+        loadedPilots = loadFile()
+        return 
 
 if __name__ == "__main__":
     app = App()
