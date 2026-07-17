@@ -9,6 +9,7 @@ import tkintermapview
 from PIL import Image, ImageTk
 from Modal import Modal
 
+
 class App(customtkinter.CTk):
     """Contains methods for the interface and generation of the sweatbox"""
 
@@ -22,8 +23,8 @@ class App(customtkinter.CTk):
 
         # configure window
         self.title("Sweatbox Scenario Generator")
-        self.geometry(f"{1100}x{650}")
-    
+        self.geometry(f"{1600}x{1024}")
+
         self.vfrPercentage = tk.IntVar()
         self.invalidRoutePercentage = tk.IntVar()
         self.invalidLevelPercentage = tk.IntVar()
@@ -59,6 +60,7 @@ class App(customtkinter.CTk):
         airportSelectLabel = customtkinter.CTkLabel(
             self.airportSelectFrame, text="Select Airport", font=customtkinter.CTkFont(size=20, weight="bold"))
         airportSelectLabel.grid(row=0, column=0, padx=20, pady=(20, 10))
+        self.airportRunwayDropdown = None
 
         self.placeAirportSelect()
 
@@ -79,7 +81,7 @@ class App(customtkinter.CTk):
         self.planeIconList = []
 
         # TODO: Move back to a relevant place?
-        self.switchAirport(self.selectableAirports["EGPH"]["airport"])
+        # self.switchAirport(self.selectableAirports["EGLL"]["airport"])
         self.configFrame = customtkinter.CTkFrame(
             self, corner_radius=12)
         self.configFrame.grid(row=0, column=2, rowspan=1,
@@ -88,7 +90,8 @@ class App(customtkinter.CTk):
         self.configFrame.grid_rowconfigure(4, weight=1)
 
         customtkinter.CTkLabel(self.configFrame, text="Configure",
-                               font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=0, column=0, padx=0, pady=(15, 10))
+                               font=customtkinter.CTkFont(size=20, weight="bold")).grid(row=0, column=0, padx=0,
+                                                                                        pady=(15, 10))
 
         self.sliderFrame = customtkinter.CTkScrollableFrame(
             self, corner_radius=12)
@@ -131,7 +134,8 @@ class App(customtkinter.CTk):
 
         # VFR Traffic
         self.vfrLabel = customtkinter.CTkLabel(
-            self.sliderFrame, text=f"Percentage of VFR Aircraft: 0%, \n(0 aircraft)", fg_color="transparent", justify="left")
+            self.sliderFrame, text=f"Percentage of VFR Aircraft: 0%, \n(0 aircraft)", fg_color="transparent",
+            justify="left")
         self.vfrLabel.grid(row=0, column=0, padx=0, pady=10)
 
         vfrSlider = customtkinter.CTkSlider(
@@ -144,7 +148,8 @@ class App(customtkinter.CTk):
         self.invalidRouteLabel.grid(row=2, column=0, padx=0, pady=5)
 
         invalidRouteSlider = customtkinter.CTkSlider(
-            self.sliderFrame, from_=0, to=100, variable=self.invalidRoutePercentage, command=self.updateInvalidRouteLabel)
+            self.sliderFrame, from_=0, to=100, variable=self.invalidRoutePercentage,
+            command=self.updateInvalidRouteLabel)
         invalidRouteSlider.grid(row=3, column=0, padx=5, pady=(0, 20))
 
         # Invalid Levels
@@ -172,7 +177,8 @@ class App(customtkinter.CTk):
         self.arrivalRateLabel.grid(row=8, column=0, padx=5, pady=5)
 
         arrivalRateUnit = customtkinter.CTkSwitch(
-            self.sliderFrame, text="MIT / TIME", command=self.updateArrivalRateLabel, variable=self.arrivalRateType, onvalue="TIME", offvalue="MIT")
+            self.sliderFrame, text="MIT / TIME", command=self.updateArrivalRateLabel, variable=self.arrivalRateType,
+            onvalue="TIME", offvalue="MIT")
         arrivalRateUnit.grid(row=9, column=0, padx=5, pady=(0, 20))
 
         self.arrivalRateEntry = customtkinter.CTkEntry(
@@ -187,10 +193,18 @@ class App(customtkinter.CTk):
         """
         airportVar = tk.StringVar(value="Select Airport")
         airportDropdown = customtkinter.CTkOptionMenu(
-            self.airportSelectFrame, variable=airportVar, values=list(self.selectableAirports.keys()), command=lambda _: self.switchAirport(self.selectableAirports[airportVar.get()]["airport"]))
+            self.airportSelectFrame, variable=airportVar, values=list(self.selectableAirports.keys()),
+            command=lambda _: self.switchAirport(self.selectableAirports[airportVar.get()]["airport"]))
         airportDropdown.grid(row=1, column=0, padx=20, pady=10)
+        runwayVar = tk.StringVar(value="Select Runway")
+        self.airportRunwayDropdown = customtkinter.CTkOptionMenu(
+            self.airportSelectFrame, state="disabled", variable=runwayVar, values=[],
+            command=lambda _: self.selectRunway(self.activeAirport.config[runwayVar.get()]))
+        self.airportRunwayDropdown.grid(row=2, column=0, padx=20, pady=10)
 
-        customtkinter.CTkButton(self.airportSelectFrame, text="Test", command=lambda: Modal(self,"This is a test modal","Success")).grid(row=2, column=0, pady=10)
+        # customtkinter.CTkButton(self.airportSelectFrame, text="Test",
+        #                         command=lambda: Modal(self, "This is a test modal", "Success")).grid(row=2, column=0,
+        #                                                                                              pady=10)
 
     def getSectorFile(self) -> str:
         """Get the location of the sectorfile
@@ -213,7 +227,7 @@ class App(customtkinter.CTk):
                     break
 
         # TODO: Get the things we need from the SF / Perhaps move to `utils.py`??
-        with open(sectorFilePath, "r")as sf:
+        with open(sectorFilePath, "r") as sf:
             ...  # process
 
     def loadOptions(self) -> None:
@@ -231,7 +245,7 @@ class App(customtkinter.CTk):
     def writeOptions(self) -> None:
         """Update the options file
         """
-        with open("sweatbox_generator.config", "w")as configFile:
+        with open("sweatbox_generator.config", "w") as configFile:
             configFile.write(f"{self.sectorFileLocation},")
             configFile.write(f"{self.outputDirectory},")
 
@@ -247,7 +261,7 @@ class App(customtkinter.CTk):
         return filedialog.askdirectory(title=f"Select {dir}")
 
     def getControllers(self) -> list[Controller]:
-        with open(resourcePath("rsc/controllers.json"))as f:
+        with open(resourcePath("rsc/controllers.json")) as f:
             data = json.load(f)
         controllers = []
         for airport in self.activeControllers:
@@ -286,7 +300,7 @@ class App(customtkinter.CTk):
                 for mit in rate:
                     try:
                         mit_value = float(mit)
-                        speed = 270  # kts
+                        speed = 160  # kts
                         time_delay = (mit_value / speed) * 60
                         time_delays.append(time_delay)
                     except ValueError:
@@ -294,7 +308,7 @@ class App(customtkinter.CTk):
                 rate = time_delays
             else:
                 print(f"ERROR : {self.arrivalRateType=}")
-                Modal(self,f"Something has gone wrong \nArrival Rate type = {self.arrivalRateType} \nPlease Try again")
+                Modal(self, f"Something has gone wrong \nArrival Rate type = {self.arrivalRateType} \nPlease Try again")
 
             offsets = [rate[0]]
             for i, r in enumerate(rate[1:]):
@@ -306,13 +320,23 @@ class App(customtkinter.CTk):
 
             extended_offsets = []
             for _ in range(repetitions):
-                extended_offsets.extend([str(int(offset) + int(extended_offsets[-1]) if extended_offsets else int(offset)) for offset in offsets])
+                extended_offsets.extend(
+                    [str(int(offset) + int(extended_offsets[-1]) if extended_offsets else int(offset)) for offset in
+                     offsets])
             offsets = extended_offsets
             offsets = [offset for offset in offsets if int(offset) <= int(lengthOfSb)]
             print(f"SYSTEM: {offsets=}")
-        
-        self.sweatboxContents, occupiedStands = generateSweatboxText(self.activeAirport, self.selectableAirports[self.activeAirport.icao]["approachData"], int(self.vfrPercentage.get()), int(self.invalidRoutePercentage.get()),
-                                                     int(self.invalidLevelPercentage.get()), int(self.fplanErrorsPercentage.get()), controllers, int(numberOfPlanes), self.manualPilots, offsets, usedStands)
+
+        self.sweatboxContents, occupiedStands, stand_list = generateSweatboxText(self.activeAirport,
+                                                                                 self.selectableAirports[
+                                                                                     self.activeAirport.icao][
+                                                                                     "approachData"],
+                                                                                 int(self.vfrPercentage.get()),
+                                                                                 int(self.invalidRoutePercentage.get()),
+                                                                                 int(self.invalidLevelPercentage.get()),
+                                                                                 int(self.fplanErrorsPercentage.get()),
+                                                                                 controllers, int(numberOfPlanes),
+                                                                                 self.manualPilots, offsets, usedStands)
 
         print(f"SYSTEM: GENERATED SWEATBOX FILE")
         self.setMarkers(self.activeAirport, occupiedStands)
@@ -330,20 +354,25 @@ class App(customtkinter.CTk):
 
         if not fileName:
             print("ERROR : COULD NOT OUTPUT FILE")
-            Modal(self,"Could not find output location \nPlease Try Again")
+            Modal(self, "Could not find output location \nPlease Try Again")
             return
-        with open(fileName, "w")as outFile:
+
+        stands_file_name = f"{os.path.splitext(fileName)[0]}_stands.json"
+        with open(stands_file_name, "w") as json_file:
+            json.dump(stand_list, json_file)
+
+        with open(fileName, "w") as outFile:
             outFile.write(self.sweatboxContents)
 
         print(f"SYSTEM: FILE WRITTEN TO {fileName}")
-        Modal(self,"Sweatbox Generated","Success!")
+        Modal(self, "Sweatbox Generated", "Success!")
         print(f"SYSTEM: BYE")
-        #self.destroy()
+        # self.destroy()
 
     def updateVFRLabel(self, value) -> None:
         numberOfPlanes = int(self.numberOfPlanesEntry.get(
         )) if self.numberOfPlanesEntry.get() else 20
-        numberOfVfr = int(numberOfPlanes * value/100)
+        numberOfVfr = int(numberOfPlanes * value / 100)
 
         self.vfrLabel.configure(
             text=f"Percentage of VFR Aircraft: {int(value)}%, \n({numberOfVfr} aircraft)")
@@ -383,6 +412,10 @@ class App(customtkinter.CTk):
         zoom = mapConfig[airport.icao]["zoom"]
         self.mapWidget.set_position(float(lat), float(long))
         self.mapWidget.set_zoom(int(zoom))
+        self.airportRunwayDropdown.configure(state="normal", values=airport.config.keys())
+
+    def selectRunway(self, runway) -> None:
+        self.activeAirport.active_runway = runway
 
     def setMarkers(self, airport: Airport, used) -> None:
         """Draws markers for each defined stand
@@ -400,10 +433,12 @@ class App(customtkinter.CTk):
             selectedStand = stands.get(stand)
             if stand in used:
                 planeIcon = ImageTk.PhotoImage(image.rotate(90 - int(stands[stand]["hdg"])))
-                self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand, icon=planeIcon)
-                #self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand) # Original red markers
+                self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand,
+                                          icon=planeIcon)
+                # self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand) # Original red markers
             else:
-                self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand, marker_color_outside="Light Green", marker_color_circle="Green")
+                self.mapWidget.set_marker(float(selectedStand["lat"]), float(selectedStand["long"]), text=stand,
+                                          marker_color_outside="Light Green", marker_color_circle="Green")
             markers[stand] = self.mapWidget
 
     def loadAirports(self) -> None:
@@ -415,7 +450,7 @@ class App(customtkinter.CTk):
 
         for airport in airportConfigs:
             elevation = airportConfigs[airport]["elevation"]
-            runway = airportConfigs[airport]["runway"]
+            runways = airportConfigs[airport]["runways"]
             position = airportConfigs[airport]["position"]
             appData = airportConfigs[airport]["approachData"]
             appDataStr = "\n".join(
@@ -423,7 +458,7 @@ class App(customtkinter.CTk):
 
             self.selectableAirports[airport] = {}
             self.selectableAirports[airport]["airport"] = Airport(
-                airport, elevation, runway, position)
+                airport, elevation, runways, position)
             self.selectableAirports[airport]["approachData"] = appDataStr
 
     def addManualPilot(self, usedStands) -> None:
@@ -432,7 +467,7 @@ class App(customtkinter.CTk):
         newWindow = customtkinter.CTkToplevel(self)
         newWindow.title("Add Manual Pilot")
         newWindow.geometry("650x550")
-        
+
         def save_pilot(lat, long, hdg) -> None:
             callsign = callsignEntry.get().upper()
             alt = self.activeAirport.altitude
@@ -486,7 +521,7 @@ class App(customtkinter.CTk):
             newWindow, text="Coordinates", variable=positionVar, value="C")
         coordsRadio.grid(row=rowCount, column=1, padx=(10, 5), pady=5, sticky="w")
         dropdownRadio = customtkinter.CTkRadioButton(
-            newWindow, text="Choose stand from list", variable=positionVar, value="D") # D = dropdown
+            newWindow, text="Choose stand from list", variable=positionVar, value="D")  # D = dropdown
         dropdownRadio.grid(row=rowCount, column=2, padx=(5, 10), pady=5, sticky="w")
         rowCount += 1
 
@@ -513,8 +548,8 @@ class App(customtkinter.CTk):
         longLabel.grid(row=rowCount, column=0, pady=5, sticky="e")
         longEntry.grid(row=rowCount, column=1, pady=5, padx=5)
         rowCount += 1
-        standLabel.grid(row=rowCount-2, column=0, pady=5, sticky="e")
-        standDropdown.grid(row=rowCount-2, column=1, pady=5, padx=5)
+        standLabel.grid(row=rowCount - 2, column=0, pady=5, sticky="e")
+        standDropdown.grid(row=rowCount - 2, column=1, pady=5, padx=5)
         rowCount += 1
 
         headingSelLabel.grid(row=rowCount, column=0, pady=5, sticky="e")
@@ -581,7 +616,8 @@ class App(customtkinter.CTk):
         rowCount += 1
 
         save_button = customtkinter.CTkButton(
-            newWindow, text="Add pilot", command=lambda: set_position(positionVar.get(), headingSel.get(), standData, usedStands))
+            newWindow, text="Add pilot",
+            command=lambda: set_position(positionVar.get(), headingSel.get(), standData, usedStands))
         save_button.grid(row=rowCount, column=0, columnspan=2, pady=20)
         rowCount += 1
 
@@ -627,7 +663,7 @@ class App(customtkinter.CTk):
         def saveControllers() -> None:
             controllerWindow.destroy()
 
-        with open(resourcePath("rsc/controllers.json"))as f:
+        with open(resourcePath("rsc/controllers.json")) as f:
             controllers = json.load(f)
 
         save_button = customtkinter.CTkButton(
@@ -636,7 +672,8 @@ class App(customtkinter.CTk):
 
         controllerVar = tk.StringVar(value="Select Controller")
         controllerDropdown = customtkinter.CTkOptionMenu(
-            controllerWindow, variable=controllerVar, values=list(controllers.keys()), command=lambda _: updateControllerInfo())
+            controllerWindow, variable=controllerVar, values=list(controllers.keys()),
+            command=lambda _: updateControllerInfo())
         controllerDropdown.grid(
             row=1, column=0, pady=10, padx=10)
 
@@ -661,7 +698,7 @@ class App(customtkinter.CTk):
                     checkbox.grid(row=2 + list(info.keys()).index(pos),
                                   column=0, pady=5, padx=10)
                     var.trace_add("write", lambda *args, pos=pos,
-                                  var=var: saveCheckboxState(selected_controller, pos, var))
+                                                  var=var: saveCheckboxState(selected_controller, pos, var))
 
     def placeAircraftIcon(self, airportICAO: str, standNumber: str) -> None:
         """Place an aircraft Icon on a stand
@@ -671,7 +708,7 @@ class App(customtkinter.CTk):
             standNumber (str): Stand identifier e.g. 1 or 45C
         """
 
-        with open(resourcePath("rsc/stands.json"))as f:
+        with open(resourcePath("rsc/stands.json")) as f:
             standData = json.load(f)
         lat, long, heading, _ = standData[airportICAO][standNumber].split(",")
         image = Image.open(resourcePath("icons8-plane-50.png"))
@@ -683,7 +720,7 @@ class App(customtkinter.CTk):
         self.planeIconList.append(planeIcon)
         self.mapWidget.set_marker(
             float(lat), float(long), icon=planeIcon)
-        
+
 
 if __name__ == "__main__":
     app = App()

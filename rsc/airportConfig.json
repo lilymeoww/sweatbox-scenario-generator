@@ -2,7 +2,10 @@
   "EGPH": {
     "ICAO": "EGPH",
     "elevation": "136",
-    "runway": "24",
+    "runways": {
+      "24": {},
+      "06": {}
+    },
     "position": "GND",
     "approachData": {
       "app1": "ILS24:55.9560884:-3.3546135:55.9438540:-3.3907010",
@@ -14,7 +17,12 @@
   "EGCC": {
     "ICAO": "EGCC",
     "elevation": "257",
-    "runway": "23R",
+    "runways": {
+      "23R": {},
+      "05L": {},
+      "23L": {},
+      "05R": {}
+    },
     "position": "GND",
     "approachData": {
       "app1": "ILS23R:53.3620885:-2.2580209:53.3454756:-2.2922227",
@@ -26,7 +34,10 @@
   "EGSS": {
     "ICAO": "EGSS",
     "elevation": "550",
-    "runway": "22",
+    "runways": {
+      "22": {},
+      "04": {}
+    },
     "position": "GND",
     "approachData": {
       "app1": "ILS22:51.8951645:0.2499406:51.8903420:0.2427578",
@@ -36,7 +47,44 @@
   "EGLL": {
     "ICAO": "EGLL",
     "elevation": "83",
-    "runway": "27R",
+    "runways": {
+      "27L": {
+        "lat": 51.508166,
+        "long": -0.12675,
+        "alt": 3000,
+        "heading": 2304,
+        "pseudoRoute": "CF27L ILS27L",
+        "levelByFix": "CF27L",
+        "levelAtFix": "2500"
+      },
+      "27R": {
+        "lat": 51.508166,
+        "long": -0.12675,
+        "alt": 3000,
+        "heading": 1960,
+        "pseudoRoute": "CF27R ILS27R",
+        "levelByFix": "CF27R",
+        "levelAtFix": "2500"
+      },
+      "09L": {
+        "lat": 51.511838,
+        "long": -0.844331,
+        "alt": 3000,
+        "heading": 1960,
+        "pseudoRoute": "CF09L ILS09L",
+        "levelByFix": "CF09L",
+        "levelAtFix": "2500"
+      },
+      "09R": {
+        "lat": 51.511838,
+        "long": -0.844331,
+        "alt": 3000,
+        "heading": 2304,
+        "pseudoRoute": "CF09R ILS09R",
+        "levelByFix": "CF09R",
+        "levelAtFix": "2500"
+      }
+    },
     "position": "GND",
     "approachData": {
       "app1": "ILS09R:51.464638:-0.487753:090.0",

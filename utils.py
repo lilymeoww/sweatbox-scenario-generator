@@ -3,6 +3,7 @@ import random
 import json
 import sys
 import os
+from typing import Tuple, Any, Dict, List
 
 
 def resourcePath(relativePath: str) -> str:
@@ -35,6 +36,7 @@ class Airport:
         self.altitude = altitude
         self.config = config
         self.facility = facility
+        self.active_runway = list(config.keys())[0]
 
 
 class Controller:
@@ -97,7 +99,9 @@ class Pilot:
         Pseudo route for aircraft
     """
 
-    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str, crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, speed: str = "420", timeUntilSpawn: str = "0", levelByFix: str = '', levelByLevel: str = "3000",owner: str = None):
+    def __init__(self, cs: str, lat: str, long: str, alt: str, hdg: str, dep: str, sq: str, rules: str, ac_type: str,
+                 crz: str, dest: str, rmk: str, rte: str, pseudo_route: str, speed: str = "420",
+                 timeUntilSpawn: str = "0", levelByFix: str = '', levelByLevel: str = "3000", owner: str = None):
         self.cs = cs
         self.lat = lat
         self.long = long
@@ -121,19 +125,16 @@ class Pilot:
         else:
             self.owner = owner
 
-
     def __str__(self):
         return (f"\nPSEUDOPILOT:{self.owner}_M_GND\n"
-                f"@N:{self.cs}:{self.sq.rjust(4, '0')}:1:{self.lat}:{self.long}:{
-            self.alt}:0:{self.hdg}:0\n"
-            f"$FP{self.cs}:*A:{self.rules}:{self.ac_type}:{self.speed}:{self.dep}:0000::{
-                    self.crz}:{self.dest.strip()}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
-            f"SIMDATA:{self.cs}:*:*:25.1.0.000\n"
-            f"$ROUTE:{self.pseudo_route}\n"
-            f"START:{self.timeUntilSpawn}\n"
-            f"DELAY:1:2\n"  # TODO - do mentors want this?
-            f"REQALT:{self.levelByFix}:{self.levelByLevel}\n"  # Level by???
-            f"INITIALPSEUDOPILOT:{self.owner}_M_GND")
+                f"@N:{self.cs}:{self.sq.rjust(4, '0')}:1:{self.lat}:{self.long}:{self.alt}:0:{self.hdg}:0\n"
+                f"$FP{self.cs}:*A:{self.rules}:{self.ac_type}:{self.speed}:{self.dep}:0000::{self.crz}:{self.dest.strip()}:00:00:0:0::/{self.rmk}/:{self.rte.strip()}\n"
+                f"SIMDATA:{self.cs}:*:*:25.1.0.000\n"
+                f"$ROUTE:{self.pseudo_route}\n"
+                f"START:{self.timeUntilSpawn}\n"
+                f"DELAY:1:2\n"  # TODO - do mentors want this?
+                f"REQALT:{self.levelByFix}:{self.levelByLevel}\n"  # Level by???
+                f"INITIALPSEUDOPILOT:{self.owner}_M_GND")
 
 
 class Scenario:
@@ -179,15 +180,16 @@ class Scenario:
         Returns:
             str: string containing the contents of scenario file
         """
-        scenario_file_str = f"PSEUDOPILOT:ALL\n\nAIRPORT_ALT:{
-            self.airport.altitude}\n\n{self.app_data}\n\n"
+        scenario_file_str = f"PSEUDOPILOT:ALL\n\nAIRPORT_ALT:{self.airport.altitude}\n\n{self.app_data}\n\n"
         scenario_file_str += "".join(str(controller) +
                                      "\n" for controller in self.controllers)
         scenario_file_str += "\n".join(str(pilot) for pilot in self.pilots)
         return scenario_file_str
 
 
-def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int, fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot], arrivalOffsets: list[str], occupiedStands) -> str:
+def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRouteP: int, invalidLevelP: int,
+                         fplanErrorsP: int, controllers: list[Controller], autoPilots: int, manualPilots: list[Pilot],
+                         arrivalOffsets: list[str], occupiedStands) -> tuple[str, Any, dict[str, list[Any]]]:
     """Generates pilots and controllers, adds them to a scenario and generates the resulting text
 
     Args:
@@ -206,64 +208,99 @@ def generateSweatboxText(airport: Airport, app_data: str, vfrP: int, invalidRout
         str: Returns string of scenario
     """
     scenario = Scenario(airport, app_data)
+    pilot_stand_list = {'departures': [], 'arrivals': []}
 
     for controller in controllers:
         scenario.add_controller(controller)
 
-    pilots, occupiedStands = generate_random_plans(autoPilots, airport, vfrP,
-                                   invalidRouteP, invalidLevelP, fplanErrorsP, occupiedStands)
-    pilots += generate_arrival_plans(airport, arrivalOffsets)
+    pilots, occupiedStands, stand_list = generate_random_plans(autoPilots, airport, vfrP,
+                                                               invalidRouteP, invalidLevelP, fplanErrorsP,
+                                                               occupiedStands)
+    pilot_stand_list['departures'] = stand_list
+    pilot_list, stand_list = generate_arrival_plans(airport, arrivalOffsets, occupiedStands)
+    pilots += pilot_list
+    pilot_stand_list['arrivals'] = stand_list
     for pilot in pilots:
         scenario.add_pilot(pilot)
 
     for pilot in manualPilots:
         scenario.add_pilot(pilot)
 
-    return scenario.generate_scenario(), occupiedStands
+    return scenario.generate_scenario(), occupiedStands, pilot_stand_list
 
 
-def generate_arrival_plans(arrival: Airport, offsets: list[str]) -> list[Pilot]:
+def generate_arrival_plans(arrivalAirport: Airport, offsets: list[str], occupiedStands) -> tuple[
+    list[Pilot], list[str]]:
     pilots = []
+    stand_list = []
     with open(resourcePath("rsc/callsignsIFR.json")) as jsonData:
         JSONInjest = json.load(jsonData)
-    callsigns = JSONInjest.get("callsigns")
+    callsigns = JSONInjest.get("EGLL")
 
     with open(resourcePath("rsc/aircraftTypes.json")) as jsonData:
         JSONInjest = json.load(jsonData)
     types = JSONInjest.get("callsigns")
 
-    with open(resourcePath("rsc/arrivalRoutes.json"))as jsonData:
+    with open(resourcePath("rsc/arrivalRoutes.json")) as jsonData:
         arrivalRoutes = json.load(jsonData)
 
+    with open(resourcePath("rsc/stands.json")) as jsonData:
+        jsonStands = json.load(jsonData)
+        arrivalStands = jsonStands.get("EGLL")
+        filteredAarrivalStands = [stand for stand in arrivalStands if stand not in occupiedStands]
+
+    with open(resourcePath("rsc/terminals.json")) as jsonData:
+        jsonTerminals = json.load(jsonData)
+
+    terminal_5_callsigns = ['SHT', 'BAW']
+    other_callsigns = [callsign for callsign in callsigns if callsign not in terminal_5_callsigns]
+    # make terminal 5 airlines twice as likely to be chosen
+    callsigns = terminal_5_callsigns * 2 + other_callsigns
+    arrival = arrivalAirport.active_runway
     for offset in offsets:
         chosenCallsign = random.choice(list(callsigns))
+        terminal = findTerminal(jsonTerminals, chosenCallsign)
+        # List comprehension to get stands for a chosen terminal
+        stands_in_terminal = [stand for stand in filteredAarrivalStands if stand.startswith(terminal)]
+
+        # Choose a random stand and remove it from the original list
+        if stands_in_terminal:  # Ensure there is at least one stand in the terminal
+            chosen_stand = random.choice(stands_in_terminal)
+            filteredAarrivalStands.remove(chosen_stand)
+
+        else:
+            print("No stands available in the terminal.")
+            continue
         cs = chosenCallsign + str(random.randint(10, 99)) + random.choice(
             string.ascii_uppercase) + random.choice(string.ascii_uppercase)
         actype = random.choice((types[chosenCallsign].split(",")))
-        print(f"SYSTEM: ARRIVAL {actype=}")
+        print(f"SYSTEM: ARRIVAL: {cs}, {actype=}, STAND:{chosen_stand}")
+        stand_list.append(f"ARRIVAL: {cs}, {actype=}, STAND:{chosen_stand}")
         rules = "I"
-        lat = 55.717191666667  # TODO change from TARTN
-        long = -3.1385361111111
-        alt = 7000
-        heading = int(((22 * 2.88) + 0.5)) << 2
-        dep = "EGLL"
-        sq = "0000"
-        cruiseLevel = "38000"
-        dest = arrival.icao
+        lat = arrival.get('lat')
+        long = arrival.get('long')
+        alt = arrival.get('alt')
+        heading = arrival.get('heading')
+        dep = "EGBB"
+        sq = str(int(offset) + 3040)
+        cruiseLevel = "19000"
+        dest = arrivalAirport.icao
         rmk = "v"
-        route = "ULTIB T420 TNT UN57 POL UN601 INPIP"
-        pseudoRoute = f"{" ".join(arrivalRoutes[arrival.icao])} CF24 ILS24"
-        levelByFix = "CF24"
-        levelAtFix = "2500"
+        route = "HON SOPIT BNN HON2H"
+        pseudoRoute = f"{' '.join(arrivalRoutes[arrivalAirport.icao])} {arrival.get("pseudoRoute")}"
+        levelByFix = arrival.get('levelByFix')
+        levelAtFix = arrival.get('levelAtFix')
 
         pilot = Pilot(cs, lat, long, alt, heading, dep, sq,
-                      rules, actype, cruiseLevel, dest, rmk, route, pseudoRoute, "180", offset, levelByFix, levelAtFix,owner="EGPH")
+                      rules, actype, cruiseLevel, dest, rmk, route, pseudoRoute, "160", offset, levelByFix, levelAtFix,
+                      owner=arrivalAirport.icao)
         pilots.append(pilot)
 
-    return pilots
+    return pilots, stand_list
 
 
-def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_factor: int, level_factor: int, entry_error_factor: int, occupiedStands) -> list[Pilot]:
+def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_factor: int, level_factor: int,
+                          entry_error_factor: int, occupiedStands) -> list[Pilot]:
     """Generates a given number of VFR and IFR flightplans
 
     Args:
@@ -277,13 +314,14 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
     Returns:
         list[Pilot]: Returns a list of pilots with the required settings
     """
-    numberOfVfr = int(amount * vfr_factor/100)
+    numberOfVfr = int(amount * vfr_factor / 100)
 
     pilots = []
+    stand_list = []
 
     stands = loadStand(dep.icao)
 
-    if(dep.icao == "EGLL"):
+    if (dep.icao == "EGLL"):
         with open(resourcePath("rsc/terminals.json")) as terminalData:
             heathrowTerminals = json.load(terminalData)
 
@@ -314,12 +352,13 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         ac_type = random.choice(callsigns[cs].split(","))
         callsigns.pop(cs, None)
 
-        if(callsigns == {}):
+        if (callsigns == {}):
             print(f"SYSTEM: NO MORE CALLSIGNS AVAILABLE | {current_sq} AIRCRAFT GENERATED")
             break
 
         stand = random.choice(list(stands))
         print(f"SYSTEM: VFR {cs} ASSIGNED TO STAND {stand}")
+        stand_list.append(f"VFR {cs} TYPE {ac_type} STAND {stand}")
         selectedStand = stands.get(stand)
         occupiedStands.append(stand)
         stands.pop(stand)
@@ -337,11 +376,11 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         rmk = "v"
         rte = "VFR"
         pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
-                      dep.icao, sq, rules, ac_type, crz, dest, rmk, rte, ""))
+                            dep.icao, sq, rules, ac_type, crz, dest, rmk, rte, ""))
 
     with open(resourcePath("rsc/callsignsIFR.json")) as jsonData:
         JSONInjest = json.load(jsonData)
-    if(dep.icao == "EGLL"):
+    if (dep.icao == "EGLL"):
         callsigns = JSONInjest.get("EGLL")
     else:
         callsigns = JSONInjest.get("callsigns")
@@ -350,7 +389,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         JSONInjest = json.load(jsonData)
     types = JSONInjest.get("callsigns")
 
-    if(dep.icao == "EGLL"):
+    if (dep.icao == "EGLL"):
         terminalStands = loadTerminals(dep.icao)
 
     for _ in range(amount - numberOfVfr):
@@ -366,7 +405,7 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         possTypes = types[chosenCallsign].split(",")
         acType = random.choice(possTypes)
 
-        if(dep.icao == "EGLL"):
+        if (dep.icao == "EGLL"):
             terminal = findTerminal(heathrowTerminals, chosenCallsign)
             while True:
                 if terminalStands[terminal] != {}:
@@ -388,21 +427,26 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
         else:
             stand = random.choice(list(stands))
         print(f"SYSTEM: IFR {cs} ASSIGNED TO STAND {stand}")
+        stand_list.append(f"IFR {cs} TYPE {acType} STAND {stand}")
 
         selectedStand = stands.get(stand)
         occupiedStands.append(stand)
-        stands.pop(stand)
-        if(stands != {}):
+        try:
+            stands.pop(stand)
+        except:
+            pass
+        if (stands != {}):
             for standToRemove in selectedStand["blocks"]:
                 if standToRemove in stands:
                     stands.pop(standToRemove)
                 print(f"SYSTEM: STAND {standToRemove} REMOVED")
         else:
-            print(f"SYSTEM: NO MORE STANDS AVAILABLE | {current_sq-1} AIRCRAFT GENERATED")
+            print(f"SYSTEM: NO MORE STANDS AVAILABLE | {current_sq - 1} AIRCRAFT GENERATED")
             return pilots, occupiedStands
 
         lat, long, hdg = selectedStand["lat"], selectedStand["long"], (
-            int((int(selectedStand["hdg"]) * 2.88) + 0.5)) << 2
+                                                                          int((int(
+                                                                              selectedStand["hdg"]) * 2.88) + 0.5)) << 2
         rmk = "v"
 
         if random.randint(1, 100) <= level_factor:
@@ -431,16 +475,16 @@ def generate_random_plans(amount: int, dep: Airport, vfr_factor: int, incorrect_
             elif chosen_error == "dep":
                 with open(resourcePath("rsc/adepError.json")) as jsonData:
                     JSONInjest = json.load(jsonData)
-                if(JSONInjest.get(depAirport) != None):
+                if (JSONInjest.get(depAirport) != None):
                     possAirports = JSONInjest.get(depAirport)
                     depAirport = random.choice(possAirports)
             pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
-                            depAirport, sq, rules, acType, crz, dest, rmk, rte, "", owner=dep.icao))  
+                                depAirport, sq, rules, acType, crz, dest, rmk, rte, "", owner=dep.icao))
         else:
             pilots.append(Pilot(cs, lat, long, dep.altitude, hdg,
-                            depAirport, sq, rules, acType, crz, dest, rmk, rte, ""))   
+                                depAirport, sq, rules, acType, crz, dest, rmk, rte, ""))
 
-    return pilots, occupiedStands
+    return pilots, occupiedStands, stand_list
 
 
 def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
@@ -468,7 +512,7 @@ def get_route(departure: str, incorrect_factor: int) -> tuple[str, str]:
             with open(resourcePath("rsc/routes.json")) as jsonData:
                 JSONInjest = json.load(jsonData)
             routes = JSONInjest.get(departure)
-            
+
             desitnation, route = random.choice(list(routes.items()))
             route = route.split(",")
 
@@ -498,7 +542,7 @@ def selectAirline(dest: str, callsigns: dict) -> tuple[str, str, str]:
     cs = chosenCallsign + str(random.randint(11, 99)) + random.choice(
         string.ascii_uppercase) + random.choice(string.ascii_uppercase)
     rules = "I"
-            
+
     return chosenCallsign, cs, rules
 
 
@@ -534,7 +578,7 @@ def findTerminal(terminals: dict, airline: str) -> str:
     for parent, children in terminals.items():
         if airline in children:
             return parent
-        
+
 
 def loadStand(icao: str) -> dict:
     """Loads the stand information for a given airport
@@ -566,7 +610,7 @@ def loadStandNums(icao: str) -> list:
     for stand in stands:
         standNums.append(stand)
         counter += 1
-    
+
     return standNums, stands
 
 
